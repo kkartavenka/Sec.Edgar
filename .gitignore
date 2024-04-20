@@ -38,6 +38,7 @@
 .idea/**/uiDesigner.xml
 .idea/**/dbnavigator.xml
 .idea/
+*.DotSettings.user
 
 # Gradle
 .idea/**/gradle.xml

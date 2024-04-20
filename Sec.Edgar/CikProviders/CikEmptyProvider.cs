@@ -6,8 +6,8 @@ public class CikEmptyProvider : CikBaseProvider
     {
     }
 
-    public async Task<string> Get(string identifier)
+    public override Task<string> GetAsync(string identifier)
     {
-        return FillStringWithZeroes(identifier);
+        return Task.Run(() => CikDataManager.FillStringWithZeroes(identifier));
     }
 }

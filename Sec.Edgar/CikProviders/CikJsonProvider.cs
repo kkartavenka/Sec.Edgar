@@ -1,5 +1,3 @@
-using System.Net;
-using System.Runtime.Serialization;
 using System.Text.Json;
 using Sec.Edgar.Models;
 
@@ -7,91 +5,83 @@ namespace Sec.Edgar.CikProviders;
 
 public class CikJsonProvider : CikBaseProvider
 {
-    private static HttpClient _httpClient;
+    private static HttpClient? _httpClient;
     private readonly string _absoluteSourceLocation;
     private readonly SourceType _sourceType;
-    private Dictionary<int, EdgarTickerModel> _cikModels = new();
-    private readonly object _lock = new();
 
-    public CikJsonProvider(HttpClient httpClient, int cikIdentifierLength, bool fillCikIdentifierWithZeroes, string absoluteSourceLocation, CancellationToken ctx) : base(cikIdentifierLength, fillCikIdentifierWithZeroes, ctx)
+    public CikJsonProvider(HttpClient? httpClient, int cikIdentifierLength, bool fillCikIdentifierWithZeroes, string absoluteSourceLocation, CancellationToken ctx) : base(cikIdentifierLength, fillCikIdentifierWithZeroes, ctx)
     {
         _httpClient = httpClient;
         _sourceType = GetSourceType(absoluteSourceLocation);
         _absoluteSourceLocation = absoluteSourceLocation;
     }
 
+    public override async Task UpdateCikDataset()
+    {
+        var dataset = _sourceType switch
+        {
+            SourceType.Web => await TryDeserializeFromWeb(),
+            SourceType.Local => await TryDeserializeFromFile(),
+            _ => null
+        };
+
+        if (dataset is not null)
+        {
+            CikDataManager.LoadData(dataset);
+        }
+        else
+        {
+            LogException(new Exception("Failed to update"), false);
+        }
+    }
+
     public override async Task<string> GetAsync(string identifier)
     {
-        return _sourceType switch
+        if (!CikDataManager.IsDataAvailable())
         {
-            SourceType.None => await base.GetAsync(identifier),
-            SourceType.Web => throw new NotImplementedException(),
-            SourceType.Local => await ReadFromFile(identifier),
-            _ => throw new ArgumentOutOfRangeException(nameof(_sourceType), _sourceType, "Unsupported CIK source type")
-        };
-    }
-
-    public override async Task<EdgarTickerModel> GetRecordAsync(int cikNumber)
-    {
-        if (_sourceType == SourceType.None)
-        {
-            throw new Exception("To obtain the model, the Uri to ");
-        }
-        throw new NotImplementedException();
-    }
-
-    public override async Task<EdgarTickerModel> GetRecordAsync(string identifier)
-    {
-        throw new NotImplementedException();
-    }
-
-    private int? TryGetNumericCik(string identifier)
-    {
-        if (int.TryParse(identifier, out var returnVar))
-        {
-            return returnVar;
+            await UpdateCikDataset();
         }
 
-        return null;
+        return CikDataManager.GetCik(identifier);
     }
-
-    private async Task<string> ReadFromFile(string identifier)
+    
+    public override async Task<string> GetAsync(int identifier)
     {
-        if (!_cikModels.Any())
+        if (!CikDataManager.IsDataAvailable())
         {
-            var tickersInfo = await TryDeserializeFromFile();
-
-            if (tickersInfo is not null)
-            {
-                lock (_lock)
-                {
-                    _cikModels = new Dictionary<int, EdgarTickerModel>(tickersInfo!.Count);
-                    foreach (var tickerInfo in tickersInfo)
-                    {
-                        if (_cikModels.TryAdd(tickerInfo.Cik, tickerInfo))
-                        {
-                            continue;
-                        }
-
-                        var exceptionMessage =
-                            $"Duplication CIK {tickerInfo.Cik}. Dictionary contains: {_cikModels[tickerInfo.Cik].Ticker}, trying adding: {tickerInfo.Ticker}";
-                        LogException(new Exception(exceptionMessage), false);
-                    }
-                }
-            }
+            await UpdateCikDataset();
         }
 
-        return FillStringWithZeroes(GetTickerInfo(identifier).CikStr);
+        return CikDataManager.GetCik(identifier);
     }
 
-    private async Task<List<EdgarTickerModel>?> TryDeserializeFromFile()
+    public override async Task<EdgarTickerModel?> GetRecordAsync(int cikNumber)
+    {
+        if (!CikDataManager.IsDataAvailable())
+        {
+            await UpdateCikDataset();
+        }
+
+        return CikDataManager.GetTickerInfo(cikNumber);
+    }
+
+    public override async Task<EdgarTickerModel?> GetRecordAsync(string identifier)
+    {
+        if (!CikDataManager.IsDataAvailable())
+        {
+            await UpdateCikDataset();
+        }
+
+        return CikDataManager.GetTickerInfo(identifier);
+    }
+
+    private async Task<List<EdgarTickerModel>?> TryDeserializeFromWeb()
     {
         try
         {
-            await using var fs = new FileStream(_absoluteSourceLocation, FileMode.Open);
-            return (await JsonSerializer.DeserializeAsync<Dictionary<string, EdgarTickerModel>>(fs, cancellationToken: Ctx))
-                .Select(x => x.Value)
-                .ToList();
+            var stream = await _httpClient.GetStreamAsync(_absoluteSourceLocation, Ctx);
+            return await TryDeserialize(stream);
+
         }
         catch (Exception e)
         {
@@ -100,32 +90,48 @@ public class CikJsonProvider : CikBaseProvider
         }
     }
 
-    private EdgarTickerModel GetTickerInfo(string identifier)
+    private async Task<List<EdgarTickerModel>?> TryDeserializeFromFile()
     {
-        var cikNumber = TryGetNumericCik(identifier);
-
-        if (cikNumber is not null)
+        try
         {
-            return _cikModels[cikNumber.Value];
+            await using var fs = new FileStream(_absoluteSourceLocation, FileMode.Open);
+            return await TryDeserialize(fs);
         }
-
-        var cikModels = _cikModels
-            .Where(x => x.Value.Ticker.Contains(identifier, StringComparison.InvariantCultureIgnoreCase))
-            .ToList();
-
-        if (!cikModels.Any())
+        catch (Exception e)
         {
-            LogException(new Exception($"Cannot find CIK through provided identifier: {identifier}"), false);
+            LogException(e, false);
+            return null;
         }
-
-        if (cikModels.Count > 1)
-        {
-            LogException(new Exception($"Found more than one match for provided identifier: {identifier}"), false);
-        }
-
-        return cikModels.First().Value;
     }
 
+    private async Task<List<EdgarTickerModel>?> TryDeserialize(Stream stream)
+    {
+        try
+        {
+            var parsedResult =
+                await JsonSerializer.DeserializeAsync<Dictionary<string, EdgarTickerModel>>(stream,
+                    cancellationToken: Ctx);
+
+            if (parsedResult is null)
+            {
+                LogException(new Exception($"{_absoluteSourceLocation} contains no values"), false);
+                return null;
+            }
+
+            return parsedResult.Select(x => x.Value).ToList();
+        }
+        catch (JsonException e)
+        {
+            LogException(e, false);
+            return null;
+        }
+        catch (Exception e)
+        {
+            LogException(e, true);
+            return null;
+        }
+    }
+    
     private void LogException(Exception exception, bool throwException)
     {
         Exceptions.TryAdd(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), exception);

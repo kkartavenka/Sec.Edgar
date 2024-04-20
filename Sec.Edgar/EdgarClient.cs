@@ -8,7 +8,7 @@ public class EdgarClient
     private readonly TimeLimiter _timeLimiter;
     private readonly ClientInfo _clientInfo;
     private readonly ICikProvider _cikProvider;
-    private static readonly HttpClient _httpClient = new();
+    private static readonly HttpClient? _httpClient = new();
     private readonly CancellationTokenSource _cts = new(); 
     
     public EdgarClient(ClientInfo clientInfo)

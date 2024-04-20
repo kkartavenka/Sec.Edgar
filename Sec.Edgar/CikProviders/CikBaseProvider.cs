@@ -1,63 +1,56 @@
 using System.Collections.Concurrent;
-using System.Text;
 using Sec.Edgar.Models;
 
 namespace Sec.Edgar.CikProviders;
 
 public abstract class CikBaseProvider : ICikProvider
 {
-    private readonly int _cikIdentifierLength;
-    private readonly bool _fillCikIdentifierWithZeroes;
-
     protected CikBaseProvider(int cikIdentifierLength, bool fillCikIdentifierWithZeroes, CancellationToken ctx)
     {
+        CikDataManager = new ModelManager(cikIdentifierLength, fillCikIdentifierWithZeroes);
+        CikDataManager.ExceptionHandler += ModelManagerOnExceptionHandler;
         Ctx = ctx;
-        _cikIdentifierLength = cikIdentifierLength;
-        _fillCikIdentifierWithZeroes = fillCikIdentifierWithZeroes;
+    }
+
+    private void ModelManagerOnExceptionHandler(object? sender, ExceptionEventArgs e)
+    {
+        Console.WriteLine($"Exception: {sender}, e: {e.Exception}");
+        Exceptions.TryAdd(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), e.Exception);
+        if (e.ReThrow)
+        {
+            throw e.Exception;
+        }
     }
 
     public virtual Task<string> GetAsync(string identifier)
     {
         throw new NotImplementedException();
     }
-
-    public virtual Task<EdgarTickerModel> GetRecordAsync(int cikNumber)
+    
+    public virtual Task<string> GetAsync(int cikNumber)
     {
         throw new NotImplementedException();
     }
 
-    public virtual Task<EdgarTickerModel> GetRecordAsync(string identifier)
+    public virtual Task<EdgarTickerModel?> GetRecordAsync(int cikNumber)
+    {
+        throw new NotImplementedException();
+    }
+
+    public virtual Task<EdgarTickerModel?> GetRecordAsync(string identifier)
     {
         throw new NotImplementedException();
     }
 
     public ConcurrentDictionary<long, Exception> Exceptions { get; } = new();
+    public virtual Task UpdateCikDataset()
+    {
+        throw new NotImplementedException();
+    }
 
     public CancellationToken Ctx { get; init; }
-
-    protected string FillStringWithZeroes(string identifier)
-    {
-        if (!_fillCikIdentifierWithZeroes)
-        {
-            return identifier;
-        }
-
-        var zeroesCount = _cikIdentifierLength - identifier.Length;
-        if (zeroesCount <= 0)
-        {
-            return identifier;
-        }
-
-        var sb = new StringBuilder(zeroesCount);
-        for (var i = 0; i < zeroesCount; i++)
-        {
-            sb.Append('0');
-        }
-
-        sb.Append(identifier);
-
-        return sb.ToString();
-    }
+    
+    internal readonly ModelManager CikDataManager;
 
     protected SourceType GetSourceType(string absoluteSourceLocation)
     {

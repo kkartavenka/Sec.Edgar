@@ -25,5 +25,6 @@
     <ItemGroup>
         <None Update="Data\company_tickers.json" CopyToOutputDirectory="Always"/>
         <None Update="Data\wrong_format.json" CopyToOutputDirectory="Always" />
+        <None Update="Data\duplicate_company_tickers.json" CopyToOutputDirectory="Always"/>
     </ItemGroup>
 </Project>

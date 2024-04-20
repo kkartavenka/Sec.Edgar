@@ -3,6 +3,7 @@ using System.Text.Json;
 using Moq;
 using Moq.Protected;
 using Sec.Edgar.CikProviders;
+using Sec.Edgar.Models;
 
 namespace Sec.Edgar.Tests;
 
@@ -75,5 +76,23 @@ public class CikProviderTests
         
         Assert.ThrowsAsync<ArgumentNullException>(async () => await sut.GetAsync(0));
         Assert.That(sut.Exceptions.Values.Count(x => x.GetType() == typeof(ArgumentNullException)), Is.EqualTo(1));
+    }
+    
+    [Test]
+    public void Duplication()
+    {
+        const int identifierInt = 789019;
+        const string expectedIdentifier = "0000789019";
+        
+        var sut = new CikJsonProvider(_httpClient, 10, true, "Data/duplicate_company_tickers.json", CancellationToken.None);
+        
+        Assert.Multiple(async () =>
+        {
+            Assert.That(await sut.GetAsync(identifierInt), Is.EqualTo(expectedIdentifier));
+            Assert.That(sut.Exceptions.Values.Count(x => x.GetType() == typeof(CikDuplicateException)), Is.EqualTo(1));
+            Assert.That(sut.Exceptions.Values.Count(x => x.GetType() == typeof(TickerDuplicateException)), Is.EqualTo(1));
+
+            var result = sut.GetAsync("microsoft");
+        });
     }
 }

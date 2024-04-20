@@ -35,14 +35,15 @@ internal class ModelManager
                 {
                     var exceptionMessage =
                         $"The dictionary contains item with CIK {tickerInfo.Cik}. Existing ticket: {_cikDict[tickerInfo.Cik].Ticker}, trying adding: {tickerInfo.Ticker}";
-                    ExceptionHandler?.Invoke(this, new ExceptionEventArgs(new Exception(exceptionMessage), false));
+                    ExceptionHandler?.Invoke(this, new ExceptionEventArgs(new CikDuplicateException(exceptionMessage), false));
                 }
 
-                if (!_tickerDict.TryAdd(tickerInfo.Ticker.ToLower().Trim(), tickerInfo))
+                var tickerDictKey = tickerInfo.Ticker.ToLower().Trim();
+                if (!_tickerDict.TryAdd(tickerDictKey, tickerInfo))
                 {
                     var exceptionMessage =
-                        $"The dictionary contains item with ticker {tickerInfo.Ticker}. Existing CIK: {_tickerDict[tickerInfo.Ticker].Cik}, trying adding: {tickerInfo.Cik}";
-                    ExceptionHandler?.Invoke(this, new ExceptionEventArgs(new Exception(exceptionMessage), false));
+                        $"The dictionary contains item with ticker {tickerInfo.Ticker}. Existing CIK: {_tickerDict[tickerDictKey].Cik}, trying adding: {tickerInfo.Cik}";
+                    ExceptionHandler?.Invoke(this, new ExceptionEventArgs(new TickerDuplicateException(exceptionMessage), false));
                 }
             }
         }

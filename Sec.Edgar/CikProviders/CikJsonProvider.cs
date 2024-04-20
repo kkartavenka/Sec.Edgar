@@ -77,11 +77,16 @@ public class CikJsonProvider : CikBaseProvider
 
     private async Task<List<EdgarTickerModel>?> TryDeserializeFromWeb()
     {
+        if (_httpClient is null)
+        {
+            LogException(new ArgumentNullException($"{nameof(_httpClient)} is null"), true);
+            return null;
+        }
+        
         try
         {
             var stream = await _httpClient.GetStreamAsync(_absoluteSourceLocation, Ctx);
             return await TryDeserialize(stream);
-
         }
         catch (Exception e)
         {

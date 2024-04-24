@@ -1,8 +1,8 @@
 namespace Sec.Edgar.CikProviders;
 
-public class CikEmptyProvider : CikBaseProvider
+internal class CikEmptyProvider : CikBaseProvider
 {
-    public CikEmptyProvider(int cikIdentifierLength, bool fillCikIdentifierWithZeroes, CancellationToken ctx) : base(cikIdentifierLength, fillCikIdentifierWithZeroes, ctx)
+    internal CikEmptyProvider(int cikIdentifierLength, bool fillCikIdentifierWithZeroes, CancellationToken ctx) : base(cikIdentifierLength, fillCikIdentifierWithZeroes, ctx)
     {
     }
 

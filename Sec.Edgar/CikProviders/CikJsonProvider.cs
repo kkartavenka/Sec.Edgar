@@ -3,16 +3,21 @@ using Sec.Edgar.Models;
 
 namespace Sec.Edgar.CikProviders;
 
-public class CikJsonProvider : CikBaseProvider
+internal class CikJsonProvider : CikBaseProvider
 {
-    private static HttpClient? _httpClient;
+    private Func<Uri, CancellationToken, Task<Stream>>? _getStreamHandler;
     private readonly string _absoluteSourceLocation;
     private readonly SourceType _sourceType;
+    private readonly Uri? _uri;
 
-    public CikJsonProvider(HttpClient? httpClient, int cikIdentifierLength, bool fillCikIdentifierWithZeroes, string absoluteSourceLocation, CancellationToken ctx) : base(cikIdentifierLength, fillCikIdentifierWithZeroes, ctx)
+    public CikJsonProvider(Func<Uri, CancellationToken, Task<Stream>> getStreamHandler, int cikIdentifierLength, bool fillCikIdentifierWithZeroes, string absoluteSourceLocation, CancellationToken ctx) : base(cikIdentifierLength, fillCikIdentifierWithZeroes, ctx)
     {
-        _httpClient = httpClient;
+        _getStreamHandler = getStreamHandler;
         _sourceType = GetSourceType(absoluteSourceLocation);
+        if (_sourceType == SourceType.Web)
+        {
+            _uri = new Uri(absoluteSourceLocation);
+        }
         _absoluteSourceLocation = absoluteSourceLocation;
     }
 
@@ -77,15 +82,21 @@ public class CikJsonProvider : CikBaseProvider
 
     private async Task<List<EdgarTickerModel>?> TryDeserializeFromWeb()
     {
-        if (_httpClient is null)
+        if (_getStreamHandler is null)
         {
-            LogException(new ArgumentNullException($"{nameof(_httpClient)} is null"), true);
+            LogException(new ArgumentNullException($"{nameof(_getStreamHandler)} is null"), true);
+            return null;
+        }
+        
+        if (_uri is null)
+        {
+            LogException(new ArgumentNullException($"{nameof(_uri)} is null"), true);
             return null;
         }
         
         try
         {
-            var stream = await _httpClient.GetStreamAsync(_absoluteSourceLocation, Ctx);
+            var stream = await _getStreamHandler(_uri, Ctx);
             return await TryDeserialize(stream);
         }
         catch (Exception e)

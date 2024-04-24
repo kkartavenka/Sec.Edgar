@@ -3,7 +3,7 @@ using Sec.Edgar.Models;
 
 namespace Sec.Edgar.CikProviders;
 
-public abstract class CikBaseProvider : ICikProvider
+internal abstract class CikBaseProvider : ICikProvider
 {
     protected CikBaseProvider(int cikIdentifierLength, bool fillCikIdentifierWithZeroes, CancellationToken ctx)
     {

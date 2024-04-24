@@ -3,12 +3,12 @@ using Sec.Edgar.Models;
 
 namespace Sec.Edgar;
 
-public interface ICikProvider
+internal interface ICikProvider
 {
-    public Task<string> GetAsync(string identifier);
-    public Task<string> GetAsync(int cikNumber);
-    public Task<EdgarTickerModel?> GetRecordAsync(int cikNumber);
-    public Task<EdgarTickerModel?> GetRecordAsync(string identifier);
-    public ConcurrentDictionary<long, Exception> Exceptions { get; }
-    public Task UpdateCikDataset();
+    internal Task<string> GetAsync(string identifier);
+    internal Task<string> GetAsync(int cikNumber);
+    internal Task<EdgarTickerModel?> GetRecordAsync(int cikNumber);
+    internal Task<EdgarTickerModel?> GetRecordAsync(string identifier);
+    internal ConcurrentDictionary<long, Exception> Exceptions { get; }
+    internal Task UpdateCikDataset();
 }

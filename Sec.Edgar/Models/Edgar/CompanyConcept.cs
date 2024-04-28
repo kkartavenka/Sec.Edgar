@@ -2,12 +2,12 @@ using System.Text.Json.Serialization;
 
 namespace Sec.Edgar.Models.Edgar;
 
-public class CompanyConcept
+internal class CompanyConcept
 {
-    [JsonPropertyName("cik")] public int CentralIndexKey { get; set; }
-    [JsonPropertyName("taxonomy")] public string Taxonomy { get; set; }
-    [JsonPropertyName("tag")] public string Tag { get; set; }
-    [JsonPropertyName("label")] public string Label { get; set; }
-    [JsonPropertyName("description")] public string Description { get; set; }
-    [JsonPropertyName("entityName")] public string EntityName { get; set; }
+    [JsonPropertyName("cik")] public required int CentralIndexKey { get; init; }
+    [JsonPropertyName("taxonomy")] public required string Taxonomy { get; init; }
+    [JsonPropertyName("tag")] public required string Tag { get; init; }
+    [JsonPropertyName("label")] public required string Label { get; init; }
+    [JsonPropertyName("description")] public required string Description { get; init; }
+    [JsonPropertyName("entityName")] public required string EntityName { get; init; }
 }

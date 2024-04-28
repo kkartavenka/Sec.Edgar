@@ -2,21 +2,21 @@ using System.Text.Json.Serialization;
 
 namespace Sec.Edgar.Models.Edgar;
 
-public class CompanyConceptRecord
+internal class CompanyConceptRecord
 {
-    [JsonPropertyName("end")] public string EndDate { get; set; }
+    [JsonPropertyName("end")] public required string EndDate { get; init; }
 
-    [JsonPropertyName("val")] public int Value { get; set; }
+    [JsonPropertyName("val")] public required int Value { get; init; }
 
-    [JsonPropertyName("accn")] public string AccessionNumber { get; set; }
+    [JsonPropertyName("accn")] public required string AccessionNumber { get; init; }
 
-    [JsonPropertyName("fy")] public int FiscalYear { get; set; }
+    [JsonPropertyName("fy")] public required int FiscalYear { get; init; }
 
-    [JsonPropertyName("fp")] public string FiscalPeriod { get; set; }
+    [JsonPropertyName("fp")] public required string FiscalPeriod { get; init; }
 
-    [JsonPropertyName("form")] public string Form { get; set; }
+    [JsonPropertyName("form")] public required string Form { get; init; }
 
-    [JsonPropertyName("filed")] public string Filed { get; set; }
+    [JsonPropertyName("filed")] public required string Filed { get; init; }
 
-    [JsonPropertyName("frame")] public string Frame { get; set; }
+    [JsonPropertyName("frame")] public required string Frame { get; init; }
 }

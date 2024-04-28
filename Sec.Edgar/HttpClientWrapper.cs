@@ -19,7 +19,6 @@ internal sealed class HttpClientWrapper
             AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
         });
         _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("user-agent", clientInfo.UserAgent);
-        _httpClient.DefaultRequestHeaders.Add("host", "www.sec.gov");
         _httpClient.DefaultRequestHeaders.Add("accept-encoding", "gzip, deflate");
     }
 

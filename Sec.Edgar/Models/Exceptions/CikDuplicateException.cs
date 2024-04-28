@@ -1,4 +1,4 @@
-namespace Sec.Edgar.Models;
+namespace Sec.Edgar.Models.Exceptions;
 
 public class CikDuplicateException : Exception
 {

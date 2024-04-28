@@ -10,8 +10,4 @@
       <PackageReference Include="RateLimiter" Version="2.2.0" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Models\DTO\" />
-    </ItemGroup>
-
 </Project>

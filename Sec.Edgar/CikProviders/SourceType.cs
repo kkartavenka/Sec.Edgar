@@ -1,6 +1,6 @@
 namespace Sec.Edgar.CikProviders;
 
-public enum SourceType
+internal enum SourceType
 {
     None,
     Web,

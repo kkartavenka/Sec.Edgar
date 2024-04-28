@@ -1,48 +1,49 @@
 using System.Text.Json.Serialization;
+using Sec.Edgar.Converters;
 
 namespace Sec.Edgar.Models.Edgar;
 
-public class FilingRecentModel
+internal class FilingRecentModel
 {
     [JsonPropertyName("accessionNumber")]
-    public string[] AccessionNumber { get; set; }
+    public required string[] AccessionNumber { get; init; }
     
-    [JsonPropertyName("filingDate")]
-    public string[] FilingDate { get; set; }
+    [JsonPropertyName("filingDate"), JsonConverter(typeof(StringToDateArrayConverter))]
+    public required DateTime?[] FilingDate { get; init; }
     
-    [JsonPropertyName("reportDate")]
-    public string[] ReportDate { get; set; }
+    [JsonPropertyName("reportDate"), JsonConverter(typeof(StringToDateArrayConverter))]
+    public required DateTime?[] ReportDate { get; init; }
     
-    [JsonPropertyName("acceptanceDateTime")]
-    public string[] AcceptanceDateTime { get; set; }
+    [JsonPropertyName("acceptanceDateTime"), JsonConverter(typeof(StringToDateArrayConverter))]
+    public required DateTime?[] AcceptanceDateTime { get; init; }
     
     [JsonPropertyName("act")]
-    public string[] Act { get; set; }
+    public required string[] Act { get; init; }
     
-    [JsonPropertyName("form")]
-    public string[] Form { get; set; }
+    [JsonPropertyName("form"), JsonConverter(typeof(StringToFormTypeArrayConverter))]
+    public required FormType[] Form { get; init; }
     
     [JsonPropertyName("fileNumber")]
-    public string[] FileNumber { get; set; }
+    public required string[] FileNumber { get; init; }
     
     [JsonPropertyName("filmNumber")]
-    public string[] FilmNumber { get; set; }
+    public required string[] FilmNumber { get; init; }
     
     [JsonPropertyName("items")]
-    public string[] Items { get; set; }
+    public required string[] Items { get; init; }
     
     [JsonPropertyName("size")]
-    public int[] Size { get; set; }
+    public required int[] Size { get; init; }
     
-    [JsonPropertyName("isXBRL")]
-    public int[] IsXBRL { get; set; }
+    [JsonPropertyName("isXBRL"), JsonConverter(typeof(StringToBoolArrayConverter))]
+    public required bool[] IsXBRL { get; init; }
     
-    [JsonPropertyName("isInlineXBRL")]
-    public int[] IsInlineXBRL { get; set; }
+    [JsonPropertyName("isInlineXBRL"), JsonConverter(typeof(StringToBoolArrayConverter))]
+    public required bool[] IsInlineXBRL { get; init; }
     
     [JsonPropertyName("primaryDocument")]
-    public string[] PrimaryDocument { get; set; }
+    public required string[] PrimaryDocument { get; init; }
     
     [JsonPropertyName("primaryDocDescription")]
-    public string[] PrimaryDocDescription { get; set; }
+    public required string[] PrimaryDocDescription { get; init; }
 }

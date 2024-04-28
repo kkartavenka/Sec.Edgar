@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using Sec.Edgar.Models;
 
-namespace Sec.Edgar;
+namespace Sec.Edgar.CikProviders;
 
 internal interface ICikProvider
 {

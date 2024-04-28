@@ -7,11 +7,11 @@ public class EdgarTickerModel
     public string CikStr => Cik.ToString();
 
     [JsonPropertyName("cik_str"), JsonRequired]
-    public int Cik { get; set; }
+    public int Cik { get; init; }
     
     [JsonPropertyName("ticker"), JsonRequired]
-    public string Ticker { get; set; }
+    public required string Ticker { get; init; }
     
     [JsonPropertyName("title"), JsonRequired]
-    public string Title { get; set; }
+    public required string Title { get; init; }
 }

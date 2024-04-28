@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace Sec.Edgar.Models.Edgar;
 
-public class FileModel
+internal class FileModel
 {
     [JsonPropertyName("name")] public string Name { get; set; }
 

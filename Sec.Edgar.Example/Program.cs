@@ -1,5 +1,4 @@
 ﻿using Sec.Edgar;
-using Sec.Edgar.CikProviders;
 
 var clientInfo = new ClientInfoBuilder()
     .WithCikProvider(CikProviderType.Json, EdgarConstants.CikJsonCompanyTicker)
@@ -8,4 +7,4 @@ var clientInfo = new ClientInfoBuilder()
     .Build();
     
 var client = new EdgarClient(clientInfo);
-await client.GetSubmission("jwn");
+var submissions = await client.GetAllSubmissions("noc");

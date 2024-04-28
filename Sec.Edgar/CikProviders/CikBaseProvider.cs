@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using Sec.Edgar.Models;
+using Sec.Edgar.Models.Exceptions;
 
 namespace Sec.Edgar.CikProviders;
 

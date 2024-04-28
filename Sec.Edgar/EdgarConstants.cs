@@ -1,4 +1,4 @@
-namespace Sec.Edgar.CikProviders;
+namespace Sec.Edgar;
 
 public static class EdgarConstants
 {

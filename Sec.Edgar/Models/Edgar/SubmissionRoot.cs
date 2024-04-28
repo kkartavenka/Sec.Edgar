@@ -1,48 +1,46 @@
 using System.Text.Json.Serialization;
+using Sec.Edgar.Converters;
 
 namespace Sec.Edgar.Models.Edgar;
 
-public class SubmissionRoot
+internal class SubmissionRoot
 {
-    [JsonPropertyName("cik")] public string CentralIndexKey { get; set; }
+    [JsonPropertyName("cik")] public required string CentralIndexKey { get; init; }
 
-    [JsonPropertyName("entityType")] public string EntityType { get; set; }
+    [JsonPropertyName("entityType")] public required string EntityType { get; init; }
 
-    [JsonPropertyName("sic")] public string StandardIndustrialClassification { get; set; }
+    [JsonPropertyName("sic")] public required string StandardIndustrialClassification { get; init; }
 
-    [JsonPropertyName("sicDescription")] public string SicDescription { get; set; }
+    [JsonPropertyName("sicDescription")] public required string SicDescription { get; init; }
 
     [JsonPropertyName("insiderTransactionForOwnerExists")]
-    public int InsiderTransactionForOwnerExists { get; set; }
+    public required int InsiderTransactionForOwnerExists { get; init; }
 
     [JsonPropertyName("insiderTransactionForIssuerExists")]
-    public int InsiderTransactionForIssuerExists { get; set; }
+    public required int InsiderTransactionForIssuerExists { get; init; }
 
-    [JsonPropertyName("name")] public string CompanyName { get; set; }
+    [JsonPropertyName("name")] public required string CompanyName { get; init; }
 
-    [JsonPropertyName("tickers")] public string[] Tickers { get; set; }
+    [JsonPropertyName("tickers")] public required string[] Tickers { get; init; }
 
-    [JsonPropertyName("exchanges")] public string[] Exchanges { get; set; }
+    [JsonPropertyName("exchanges"), JsonConverter(typeof(StringToExchangeTypeArrayConverter))] 
+    public required ExchangeType[] Exchanges { get; init; }
 
-    [JsonPropertyName("ein")] public string EmployerIdentificationNumber { get; set; }
+    [JsonPropertyName("ein")] public required string EmployerIdentificationNumber { get; init; }
 
-    [JsonPropertyName("description")] public string Description { get; set; }
+    [JsonPropertyName("description")] public required string Description { get; init; }
 
-    [JsonPropertyName("website")] public string Website { get; set; }
+    [JsonPropertyName("category")] public required string Category { get; init; }
 
-    [JsonPropertyName("category")] public string Category { get; set; }
-
-    [JsonPropertyName("fiscalYearEnd")] public string FiscalYearEnd { get; set; }
+    [JsonPropertyName("fiscalYearEnd")] public required string FiscalYearEnd { get; init; }
 
     [JsonPropertyName("stateOfIncorporation")]
-    public string StateOfIncorporation { get; set; }
+    public required string StateOfIncorporation { get; init; }
 
     [JsonPropertyName("stateOfIncorporationDescription")]
-    public string StateOfIncorporationDescription { get; set; }
+    public required string StateOfIncorporationDescription { get; init; }
 
-    [JsonPropertyName("formerNames")] public string[] FormerNames { get; set; }
-
-    [JsonPropertyName("recent")] public FilingRecentModel RecentFiles { get; set; }
-
-    [JsonPropertyName("files")] public FileModel[] Files { get; set; }
+    [JsonPropertyName("formerNames")] public required FormerName[] FormerNames { get; init; }
+    
+    [JsonPropertyName("filings")] public required FilesModel Files { get; init; }
 }

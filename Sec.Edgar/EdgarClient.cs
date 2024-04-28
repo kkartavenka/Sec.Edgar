@@ -1,4 +1,5 @@
 using Sec.Edgar.CikProviders;
+using Sec.Edgar.Models;
 
 namespace Sec.Edgar;
 
@@ -26,5 +27,5 @@ public class EdgarClient
         _submissionProvider = new SubmissionProvider(_cikProvider, _cts.Token);
     }
 
-    public async Task GetSubmission(string identifier) => await _submissionProvider.Get(identifier);
+    public async Task<Submission?> GetAllSubmissions(string identifier) => await _submissionProvider.GetAll(identifier);
 }

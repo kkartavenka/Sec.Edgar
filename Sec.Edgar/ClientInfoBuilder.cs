@@ -11,7 +11,7 @@ public class ClientInfoBuilder
     private const string TickerJsonAddress = @"https://www.sec.gov/files/company_tickers.json";
     
     private readonly Regex _userAgentEmailValidator = new(UserAgentEmailValidationPattern);
-    private Uri? _companyTickerUri = new(TickerJsonAddress);
+    private readonly Uri? _companyTickerUri = new(TickerJsonAddress);
     private int _cikIdentifierFixedLength = MinCikIdentifierLength;
     private bool _fillCikIdentifierWithZeroes = true;
     private CikProviderType _cikProviderType = CikProviderType.None;

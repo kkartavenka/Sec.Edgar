@@ -35,7 +35,7 @@ public class Submission
         }
     }
 
-    public string CentralIndexKey { get; }
+    public int CentralIndexKey { get; }
     public string EntityType { get; }
     public string StandardIndustrialClassification { get; }
     public string SicDescription { get; }

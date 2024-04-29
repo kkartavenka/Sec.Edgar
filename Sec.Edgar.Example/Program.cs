@@ -7,4 +7,5 @@ var clientInfo = new ClientInfoBuilder()
     .Build();
     
 var client = new EdgarClient(clientInfo);
+var facts = await client.GetCompanyFacts("noc");
 var submissions = await client.GetAllSubmissions("noc");

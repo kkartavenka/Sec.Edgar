@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace Sec.Edgar.Models.Edgar;
 
-internal class CompanyConcept
+public class CompanyConcept
 {
     [JsonPropertyName("cik")] public required int CentralIndexKey { get; init; }
     [JsonPropertyName("taxonomy")] public required string Taxonomy { get; init; }

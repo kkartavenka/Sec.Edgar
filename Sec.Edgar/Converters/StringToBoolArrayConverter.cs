@@ -9,7 +9,7 @@ internal class StringToBoolArrayConverter : JsonConverter<bool[]>
     {
         if (reader.TokenType != JsonTokenType.StartArray)
         {
-            throw new JsonException();
+            throw new JsonException("Unexpected JsonTokenType");
         }
         reader.Read();
 

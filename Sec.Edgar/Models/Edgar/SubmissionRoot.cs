@@ -5,7 +5,8 @@ namespace Sec.Edgar.Models.Edgar;
 
 internal class SubmissionRoot
 {
-    [JsonPropertyName("cik")] public required string CentralIndexKey { get; init; }
+    [JsonPropertyName("cik"), JsonConverter(typeof(StringToNumericConverter<int>))] 
+    public required int CentralIndexKey { get; init; }
 
     [JsonPropertyName("entityType")] public required string EntityType { get; init; }
 

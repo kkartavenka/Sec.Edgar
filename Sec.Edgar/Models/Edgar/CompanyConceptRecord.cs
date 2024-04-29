@@ -1,12 +1,18 @@
 using System.Text.Json.Serialization;
+using Sec.Edgar.Converters;
 
 namespace Sec.Edgar.Models.Edgar;
 
-internal class CompanyConceptRecord
+public class CompanyConceptRecord
 {
-    [JsonPropertyName("end")] public required string EndDate { get; init; }
+    [JsonPropertyName("start"), JsonConverter(typeof(StringToDateTimeConverter))]
+    public DateTime? StartDate { get; init; }
 
-    [JsonPropertyName("val")] public required int Value { get; init; }
+    [JsonPropertyName("end"), JsonConverter(typeof(StringToDateTimeConverter))]
+    public required DateTime? EndDate { get; init; }
+
+    [JsonPropertyName("val"), JsonConverter(typeof(StringToNumericConverter<long>))]
+    public long? Value { get; init; }
 
     [JsonPropertyName("accn")] public required string AccessionNumber { get; init; }
 
@@ -16,7 +22,8 @@ internal class CompanyConceptRecord
 
     [JsonPropertyName("form")] public required string Form { get; init; }
 
-    [JsonPropertyName("filed")] public required string Filed { get; init; }
+    [JsonPropertyName("filed"), JsonConverter(typeof(StringToDateTimeConverter))]
+    public required DateTime? Filed { get; init; }
 
-    [JsonPropertyName("frame")] public required string Frame { get; init; }
+    [JsonPropertyName("frame")] public string? Frame { get; init; }
 }

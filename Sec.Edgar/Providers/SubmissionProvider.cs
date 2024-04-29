@@ -3,7 +3,7 @@ using Sec.Edgar.CikProviders;
 using Sec.Edgar.Models;
 using Sec.Edgar.Models.Edgar;
 
-namespace Sec.Edgar;
+namespace Sec.Edgar.Providers;
 
 internal class SubmissionProvider
 {
@@ -45,7 +45,6 @@ internal class SubmissionProvider
 
         return returnVar;
     }
-
-
+    
     private Uri GetUri(string file) => new($"https://data.sec.gov/submissions/{file}");
 }

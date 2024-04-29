@@ -6,7 +6,7 @@ namespace Sec.Edgar.Converters;
 
 internal class StringToExchangeTypeArrayConverter : JsonConverter<ExchangeType[]>
 {
-    public override ExchangeType[]? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public override ExchangeType[] Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (reader.TokenType != JsonTokenType.StartArray)
         {

@@ -3,5 +3,24 @@ namespace Sec.Edgar.Models;
 public enum ExchangeType
 {
     Unknown,
-    NYSE
+    NYSE,
+    Nasdaq,
+    Euronext,
+    XSHG,
+    XJPX,
+    XSHE,
+    XNSE,
+    XBOM,
+    XHKG,
+    XTSE,
+    XLON,
+    XSAU,
+    XFRA,
+    XSWX,
+    XCSE,
+    XSTO,
+    XHEL,
+    XTAL,
+    XRIS,
+    XLIT,
 }

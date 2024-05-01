@@ -5,41 +5,43 @@ using Sec.Edgar.Models.Edgar;
 
 namespace Sec.Edgar.Providers;
 
-internal class SubmissionProvider
+internal class SubmissionProvider : BaseProvider
 {
-    private readonly ICikProvider _cikProvider;
-    private readonly HttpClientWrapper _httpClientWrapper;
-    private readonly CancellationToken _ctx;
-    
-    internal SubmissionProvider(ICikProvider cikProvider, CancellationToken ctx)
-    {
-        _cikProvider = cikProvider;
-        _ctx = ctx;
-        _httpClientWrapper = HttpClientWrapper.GetInitializedInstance();
-    }
+    internal SubmissionProvider(ICikProvider cikProvider, CancellationToken ctx) : base(cikProvider, ctx) { }
 
     internal async Task<Submission?> GetAll(string identifier)
     {
-        var cik = await _cikProvider.GetAsync(identifier);
-        var response = await _httpClientWrapper.GetStreamAsync(GetUri($"CIK{cik}.json"), _ctx);
+        var cik = await CikProvider.GetAsync(identifier);
+        return await GetImplementation(cik);
+    }
+    
+    internal async Task<Submission?> GetAll(int identifier)
+    {
+        var cik = await CikProvider.GetAsync(identifier);
+        return await GetImplementation(cik);
+    }
+
+    private async Task<Submission?> GetImplementation(string cikStr)
+    {
+        var response = await HttpClientWrapper.GetStreamAsync(GetUri($"CIK{cikStr}.json"), Ctx);
         return await TryDeserialize(response);
     }
 
     private async Task<Submission?> TryDeserialize(Stream stream)
     {
-        var rootObject = await JsonSerializer.DeserializeAsync<SubmissionRoot>(stream, cancellationToken: _ctx);
+        var rootObject = await JsonSerializer.DeserializeAsync<SubmissionRoot>(stream, cancellationToken: Ctx);
         if (rootObject?.CentralIndexKey is null)
         {
             return null;
         }
 
-        var returnVar = new Submission(rootObject);
+        var returnVar = new Submission(rootObject, CikProvider);
         returnVar.AddFiles(rootObject.Files.RecentFiles);
         
         foreach (var file in rootObject.Files.Files)
         {
-            var responseStream = await _httpClientWrapper.GetStreamAsync(GetUri(file.Name), _ctx);
-            var fileObject = await JsonSerializer.DeserializeAsync<FilingRecentModel>(responseStream, cancellationToken: _ctx);
+            var responseStream = await HttpClientWrapper.GetStreamAsync(GetUri(file.Name), Ctx);
+            var fileObject = await JsonSerializer.DeserializeAsync<FilingRecentModel>(responseStream, cancellationToken: Ctx);
             returnVar.AddFiles(fileObject);
         }
 

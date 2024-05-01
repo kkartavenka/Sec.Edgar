@@ -16,8 +16,10 @@ public class FileModel
         bool isXBRL,
         bool isInlineXBRL,
         string primaryDocument,
-        string primaryDocDescription)
+        string primaryDocDescription,
+        Submission submission)
     {
+        Submission = submission;
         AccessionNumber = accessionNumber;
         FilingDate = filingDate;
         ReportDate = reportDate;
@@ -61,4 +63,9 @@ public class FileModel
     public string PrimaryDocument { get; }
     
     public string PrimaryDocDescription { get; }
+    public Submission Submission { get; }
+
+    public async Task<Uri> GetLink() =>
+        new Uri(
+            $"{EdgarConstants.ArchiveDocument}/{await Submission.CikProvider.GetAsync(Submission.CentralIndexKey)}/{AccessionNumber.Replace("-", "")}/{PrimaryDocument}");
 }

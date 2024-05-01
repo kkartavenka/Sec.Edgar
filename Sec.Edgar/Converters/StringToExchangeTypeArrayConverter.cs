@@ -28,6 +28,25 @@ internal class StringToExchangeTypeArrayConverter : JsonConverter<ExchangeType[]
                 elements.Add(value.ToLower().Trim() switch
                 {
                     "nyse" => ExchangeType.NYSE,
+                    "nasdaq" => ExchangeType.Nasdaq,
+                    "euronext" => ExchangeType.Euronext,
+                    "xshg" => ExchangeType.XSHG,
+                    "xjpx" => ExchangeType.XJPX,
+                    "xshe" => ExchangeType.XSHE,
+                    "xnse" => ExchangeType.XNSE,
+                    "xbom" => ExchangeType.XBOM,
+                    "xhkg" => ExchangeType.XHKG,
+                    "xtse" => ExchangeType.XTSE,
+                    "xlon" => ExchangeType.XLON,
+                    "xsau" => ExchangeType.XSAU,
+                    "xfra" => ExchangeType.XFRA,
+                    "xswx" => ExchangeType.XSWX,
+                    "xcse" => ExchangeType.XCSE,
+                    "xsto" => ExchangeType.XSTO,
+                    "xhel" => ExchangeType.XHEL,
+                    "xtal" => ExchangeType.XTAL,
+                    "xris" => ExchangeType.XRIS,
+                    "xlit" => ExchangeType.XLIT,
                     _ => ExchangeType.Unknown
                 });
             }

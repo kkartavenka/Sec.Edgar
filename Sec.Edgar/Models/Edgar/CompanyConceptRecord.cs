@@ -20,7 +20,8 @@ public class CompanyConceptRecord
 
     [JsonPropertyName("fp")] public required string FiscalPeriod { get; init; }
 
-    [JsonPropertyName("form")] public required string Form { get; init; }
+    [JsonPropertyName("form"), JsonConverter(typeof(StringToFormTypeConverter))] 
+    public required FormType Form { get; init; }
 
     [JsonPropertyName("filed"), JsonConverter(typeof(StringToDateTimeConverter))]
     public required DateTime? Filed { get; init; }

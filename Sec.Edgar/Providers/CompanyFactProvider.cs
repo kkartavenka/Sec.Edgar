@@ -4,24 +4,26 @@ using Sec.Edgar.Models.Edgar;
 
 namespace Sec.Edgar.Providers;
 
-internal class CompanyFactProvider
+internal class CompanyFactProvider : BaseProvider
 {
-    private readonly ICikProvider _cikProvider;
-    private readonly HttpClientWrapper _httpClientWrapper;
-    private readonly CancellationToken _ctx;
-    
-    internal CompanyFactProvider(ICikProvider cikProvider, CancellationToken ctx)
-    {
-        _cikProvider = cikProvider;
-        _ctx = ctx;
-        _httpClientWrapper = HttpClientWrapper.GetInitializedInstance();
-    }
+    internal CompanyFactProvider(ICikProvider cikProvider, CancellationToken ctx) : base(cikProvider, ctx) { }
 
     internal async Task<CompanyFact?> Get(string identifier)
     {
-        var cik = await _cikProvider.GetAsync(identifier);
-        var stream = await _httpClientWrapper.GetStreamAsync(GetUri($"CIK{cik}.json"), _ctx);
-        return await JsonSerializer.DeserializeAsync<CompanyFact>(stream, cancellationToken: _ctx);
+        var cik = await CikProvider.GetAsync(identifier);
+        return await GetImplementation(cik);
+    }
+    
+    internal async Task<CompanyFact?> Get(int identifier)
+    {
+        var cik = await CikProvider.GetAsync(identifier);
+        return await GetImplementation(cik);
+    }
+
+    private async Task<CompanyFact?> GetImplementation(string cikStr)
+    {
+        var stream = await HttpClientWrapper.GetStreamAsync(GetUri($"CIK{cikStr}.json"), Ctx);
+        return await JsonSerializer.DeserializeAsync<CompanyFact>(stream, cancellationToken: Ctx);
     }
     
     private Uri GetUri(string file) => new($"https://data.sec.gov/api/xbrl/companyfacts/{file}");

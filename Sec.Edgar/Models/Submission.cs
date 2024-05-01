@@ -1,4 +1,5 @@
 using System.Globalization;
+using Sec.Edgar.CikProviders;
 using Sec.Edgar.Models.Edgar;
 
 namespace Sec.Edgar.Models;
@@ -6,8 +7,10 @@ namespace Sec.Edgar.Models;
 public class Submission
 {
     private FileModel[] _filings = Array.Empty<FileModel>();
-    internal Submission(SubmissionRoot rawModel)
+    
+    internal Submission(SubmissionRoot rawModel, ICikProvider cikProvider)
     {
+        CikProvider = cikProvider;
         CentralIndexKey = rawModel.CentralIndexKey;
         EntityType = rawModel.EntityType;
         StandardIndustrialClassification = rawModel.StandardIndustrialClassification;
@@ -34,7 +37,6 @@ public class Submission
             throw new FormatException($"Failed to convert {rawModel.FiscalYearEnd} to {nameof(DateOnly)}");
         }
     }
-
     public int CentralIndexKey { get; }
     public string EntityType { get; }
     public string StandardIndustrialClassification { get; }
@@ -53,6 +55,8 @@ public class Submission
     public FormerName[] FormerNames { get; }
     public FileModel[] Filings => _filings;
 
+    internal readonly ICikProvider CikProvider;
+    
     internal void AddFiles(FilingRecentModel? documentArray)
     {
         if (documentArray is null)
@@ -78,7 +82,8 @@ public class Submission
                 isXBRL: documentArray.IsXBRL[i],
                 isInlineXBRL: documentArray.IsInlineXBRL[i],
                 primaryDocument: documentArray.PrimaryDocument[i],
-                primaryDocDescription: documentArray.PrimaryDocDescription[i]);
+                primaryDocDescription: documentArray.PrimaryDocDescription[i],
+                submission: this);
         }
 
         var originalFilingSize = _filings.Length;

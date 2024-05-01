@@ -10,4 +10,9 @@ internal class CikEmptyProvider : CikBaseProvider
     {
         return Task.Run(() => CikDataManager.FillStringWithZeroes(identifier));
     }
+    
+    public override Task<string> GetAsync(int cikNumber)
+    {
+        return GetAsync(cikNumber.ToString());
+    }
 }

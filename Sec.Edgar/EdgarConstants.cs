@@ -7,4 +7,6 @@ public static class EdgarConstants
 
     public const string StandardIndustrialClassification =
         "https://www.sec.gov/corpfin/division-of-corporation-finance-standard-industrial-classification-sic-code-list";
+
+    public const string ArchiveDocument = "https://www.sec.gov/ix?doc=/Archives/edgar/data";
 }

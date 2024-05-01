@@ -10,7 +10,7 @@ var clientInfo = new ClientInfoBuilder()
     .Build();
 ```
 
-In this case, CIK number must be provided as `int` or `string` when using the client:
+In the case below, CIK number must be provided as `int` or `string` when using the client, otherwise Exception will be thrown:
 ```csharp
 var clientInfo = new ClientInfoBuilder()
     .WithUserAgent("My Demo Company mycompany@example.com")

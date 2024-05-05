@@ -52,3 +52,10 @@ The following example demonstrate obtaining all `EntityCommonStockSharesOutstand
 var company = await client.GetCompanyFacts("noc");
 company.Facts[Taxonomy.Dei]["EntityCommonStockSharesOutstanding"].Units["shares"]
 ```
+
+## Get company concepts data for XBRL tag
+
+The following example demonstrate obtaining all `EntityCommonStockSharesOutstanding` expressed in `shares` units using Dei taxonomy:
+```csharp
+var concept = await client.GetCompanyConcept("noc", Taxonomy.Dei, "EntityCommonStockSharesOutstanding");
+```

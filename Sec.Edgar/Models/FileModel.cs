@@ -1,3 +1,5 @@
+using Sec.Edgar.Enums;
+
 namespace Sec.Edgar.Models;
 
 public class FileModel

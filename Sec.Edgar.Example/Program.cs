@@ -1,4 +1,5 @@
 ﻿using Sec.Edgar;
+using Sec.Edgar.Enums;
 using Sec.Edgar.Models;
 
 var clientInfo = new ClientInfoBuilder()
@@ -18,6 +19,5 @@ if (submissions is not null)
 }
 
 var company = await client.GetCompanyFacts("noc");
-Console.Read();
-//var submissions = await client.GetAllSubmissions("noc");
-//var submissions = await client.GetCompanyFacts()
+
+var concept = await client.GetCompanyConcept("noc", Taxonomy.Dei, "EntityCommonStockSharesOutstanding");

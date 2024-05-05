@@ -5,8 +5,14 @@
     &lt;TestId&gt;NUnit3x::3FCE271A-822F-4992-AFD0-44B7419E3ABE::net8.0::Sec.Edgar.Tests.CikProviderTests.JsonSource&lt;/TestId&gt;
   &lt;/TestAncestor&gt;
 &lt;/SessionState&gt;</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=da5c4d8f_002Dffa9_002D4f9a_002D88a7_002D8c2f65552dbc/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="ExceptionScenario" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=da5c4d8f_002Dffa9_002D4f9a_002D88a7_002D8c2f65552dbc/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="ExceptionScenario" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
   &lt;TestAncestor&gt;
     &lt;TestId&gt;NUnit3x::3FCE271A-822F-4992-AFD0-44B7419E3ABE::net8.0::Sec.Edgar.Tests.CikProviderTests&lt;/TestId&gt;
+  &lt;/TestAncestor&gt;
+&lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=edce35a8_002Dcc42_002D4ddc_002D8da0_002D6367d81536cb/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="MissingHttpClient" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;TestAncestor&gt;
+    &lt;TestId&gt;NUnit3x::3FCE271A-822F-4992-AFD0-44B7419E3ABE::net8.0::Sec.Edgar.Tests.CikProviderTests.MissingHttpClient&lt;/TestId&gt;
+    &lt;TestId&gt;NUnit3x::3FCE271A-822F-4992-AFD0-44B7419E3ABE::net8.0::Sec.Edgar.Tests.CikProviderTests.Duplication&lt;/TestId&gt;
   &lt;/TestAncestor&gt;
 &lt;/SessionState&gt;</s:String></wpf:ResourceDictionary>

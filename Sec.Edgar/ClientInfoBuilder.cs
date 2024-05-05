@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
+using Sec.Edgar.Enums;
 
 namespace Sec.Edgar;
 

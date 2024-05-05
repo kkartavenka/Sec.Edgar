@@ -1,13 +1,12 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Sec.Edgar.Enums;
 using Sec.Edgar.Models;
 
 namespace Sec.Edgar.Converters;
 
-internal class StringToFormTypeConverter : JsonConverter<FormType>
+public class StringToEnumConverter<T> : JsonConverter<T> where T: struct, Enum
 {
-    public override FormType Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (reader.TokenType != JsonTokenType.String)
         {
@@ -15,21 +14,20 @@ internal class StringToFormTypeConverter : JsonConverter<FormType>
         }
 
         var value = reader.GetString();
-
         if (string.IsNullOrWhiteSpace(value))
         {
-            return FormType.Unrecognized;
+            return default;
         }
-
-        var matchByAttribute = EnumExtension.GetMapping<FormType>()
+        
+        var matchByAttribute = EnumExtension.GetMapping<T>()
             .SingleOrDefault(x => x.Key.Equals(value, StringComparison.CurrentCultureIgnoreCase));
 
-        return Enum.TryParse(matchByAttribute.Value, out FormType observedType)
+        return Enum.TryParse(matchByAttribute.Value, out T observedType)
             ? observedType
-            : FormType.Unrecognized;
+            : default;
     }
 
-    public override void Write(Utf8JsonWriter writer, FormType value, JsonSerializerOptions options)
+    public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
     {
         throw new NotImplementedException();
     }

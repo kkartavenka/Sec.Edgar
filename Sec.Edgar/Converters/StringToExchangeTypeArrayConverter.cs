@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Sec.Edgar.Enums;
 using Sec.Edgar.Models;
 
 namespace Sec.Edgar.Converters;

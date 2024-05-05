@@ -1,14 +1,12 @@
-using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Sec.Edgar.Enums;
 using Sec.Edgar.Models;
 
 namespace Sec.Edgar.Converters;
 
 internal class StringToFormTypeArrayConverter : JsonConverter<FormType[]>
 {
-    private static List<KeyValuePair<string, string>> _formMapping = new();
-    
     public override FormType[] Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (reader.TokenType != JsonTokenType.StartArray)
@@ -28,7 +26,7 @@ internal class StringToFormTypeArrayConverter : JsonConverter<FormType[]>
             }
             else
             {
-                var matchByAttribute = GetFormMapping()
+                var matchByAttribute = EnumExtension.GetMapping<FormType>()
                     .SingleOrDefault(x => x.Key.Equals(value, StringComparison.CurrentCultureIgnoreCase));
 
                 elements.Add(Enum.TryParse(matchByAttribute.Value, out FormType observedType)
@@ -45,17 +43,5 @@ internal class StringToFormTypeArrayConverter : JsonConverter<FormType[]>
     public override void Write(Utf8JsonWriter writer, FormType[] value, JsonSerializerOptions options)
     {
         throw new NotImplementedException();
-    }
-
-    private static List<KeyValuePair<string, string>> GetFormMapping()
-    {
-        if (_formMapping.Any())
-        {
-            return _formMapping;
-        }
-
-        _formMapping = EnumExtension.GetMapping<FormType>();
-
-        return _formMapping;
     }
 }

@@ -1,5 +1,6 @@
 using System.Globalization;
 using Sec.Edgar.CikProviders;
+using Sec.Edgar.Enums;
 using Sec.Edgar.Models.Edgar;
 
 namespace Sec.Edgar.Models;

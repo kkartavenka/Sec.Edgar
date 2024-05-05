@@ -1,4 +1,5 @@
 using Sec.Edgar.CikProviders;
+using Sec.Edgar.Enums;
 using Sec.Edgar.Models;
 using Sec.Edgar.Models.Edgar;
 using Sec.Edgar.Providers;
@@ -21,13 +22,14 @@ public class EdgarClient
                 clientInfo.FillCikIdentifierWithZeroes, CancellationToken.None),
             CikProviderType.Json => new CikJsonProvider(httpClientWrapper.GetStreamHandler(), clientInfo.CikIdentifierLength,
                 clientInfo.FillCikIdentifierWithZeroes, clientInfo.CikSource, _cts.Token),
-            CikProviderType.Text => new CikTextProvider(httpClientWrapper.GetStreamHandler(), clientInfo.CikIdentifierLength,
-                clientInfo.FillCikIdentifierWithZeroes, clientInfo.CikSource, _cts.Token),
-            _ => throw new ArgumentOutOfRangeException()
+            //CikProviderType.Text => new CikTextProvider(httpClientWrapper.GetStreamHandler(), clientInfo.CikIdentifierLength,
+            //    clientInfo.FillCikIdentifierWithZeroes, clientInfo.CikSource, _cts.Token),
+            _ => throw new ArgumentOutOfRangeException(nameof(clientInfo.ProviderType), clientInfo.ProviderType, "Unsupported provider")
         };
         
         _submissionProvider = new SubmissionProvider(cikProvider, _cts.Token);
         _factProvider = new CompanyFactProvider(cikProvider, _cts.Token);
+        _conceptProvider = new CompanyConceptProvider(cikProvider, _cts.Token);
     }
 
     public async Task<Submission?> GetAllSubmissions(string identifier) => await _submissionProvider.GetAll(identifier);
@@ -38,6 +40,9 @@ public class EdgarClient
     
     public async Task<CompanyFact?> GetCompanyFacts(int identifier) => await _factProvider.Get(identifier);
 
-    public async Task GetCompanyConcept(string identifier, Taxonomy taxonomy, string xbrlTag) =>
+    public async Task<CompanyConcept?> GetCompanyConcept(string identifier, Taxonomy taxonomy, string xbrlTag) =>
+        await _conceptProvider.Get(identifier, taxonomy, xbrlTag);
+    
+    public async Task<CompanyConcept?> GetCompanyConcept(int identifier, Taxonomy taxonomy, string xbrlTag) =>
         await _conceptProvider.Get(identifier, taxonomy, xbrlTag);
 }

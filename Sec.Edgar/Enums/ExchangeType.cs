@@ -1,4 +1,4 @@
-namespace Sec.Edgar.Models;
+namespace Sec.Edgar.Enums;
 
 public enum ExchangeType
 {

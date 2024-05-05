@@ -1,14 +1,14 @@
-namespace Sec.Edgar.Models;
+namespace Sec.Edgar.Enums;
 
 [AttributeUsage(AttributeTargets.Field)]
-internal class FormEnumAttribute : Attribute
+internal class SpecialEnumAttribute : Attribute
 {
-    internal FormEnumAttribute(string value)
+    internal SpecialEnumAttribute(string value)
     {
         Value = value;
     }
     
-    internal FormEnumAttribute(string value, string[] aliases)
+    internal SpecialEnumAttribute(string value, string[] aliases)
     {
         Value = value;
         Aliases = aliases;

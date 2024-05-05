@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using Sec.Edgar.Converters;
+using Sec.Edgar.Enums;
 
 namespace Sec.Edgar.Models.Edgar;
 
@@ -18,7 +19,7 @@ public class CompanyConceptRecord
 
     [JsonPropertyName("fy")] public required int FiscalYear { get; init; }
 
-    [JsonPropertyName("fp")] public required string FiscalPeriod { get; init; }
+    [JsonPropertyName("fp"), JsonConverter(typeof(StringToEnumConverter<FiscalPeriod>))] public required FiscalPeriod FiscalPeriod { get; init; }
 
     [JsonPropertyName("form"), JsonConverter(typeof(StringToFormTypeConverter))] 
     public required FormType Form { get; init; }

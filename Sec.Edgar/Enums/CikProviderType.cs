@@ -1,4 +1,4 @@
-namespace Sec.Edgar;
+namespace Sec.Edgar.Enums;
 
 public enum CikProviderType
 {

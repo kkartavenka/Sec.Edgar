@@ -16,6 +16,7 @@ var clientInfo = new ClientInfoBuilder()
     .WithUserAgent("My Demo Company mycompany@example.com")
     .Build();
 ```
+By default, a rate limit is applied, set by SEC to 10 requests per second. It can be overridden with `.WithRateLimit()`. SEC uses a CIK with a length of 10, if requirements are changed it can be overridden with `.WithCikIdentifierLength()`.
 
 Getting the client:
 

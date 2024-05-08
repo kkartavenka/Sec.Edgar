@@ -12,6 +12,7 @@
         <PackageProjectUrl>https://github.com/kkartavenka/Sec.Edgar</PackageProjectUrl>
         <RepositoryUrl>https://github.com/kkartavenka/Sec.Edgar</RepositoryUrl>
         <PackageTags>sec, edgar, edgar-api</PackageTags>
+        <Version>1.0.1</Version>
     </PropertyGroup>
 
     <ItemGroup>

@@ -10,5 +10,7 @@ public enum FiscalPeriod
     [SpecialEnum("q3")]
     Q3,
     [SpecialEnum("q4")]
-    Q4
+    Q4,
+    [SpecialEnum("fy")]
+    FiscalYear
 }

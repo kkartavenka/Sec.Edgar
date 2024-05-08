@@ -8,7 +8,7 @@ var clientInfo = new ClientInfoBuilder()
     .Build();
     
 var client = new EdgarClient(clientInfo);
-var submissions = await client.GetAllSubmissions(1133421);
+var submissions = await client.GetAllSubmissions("0000895564");
 if (submissions is not null)
 {
     var lastYearReport = submissions.Filings
@@ -18,6 +18,7 @@ if (submissions is not null)
     var link = await lastYearReport?.GetLink();
 }
 
-var company = await client.GetCompanyFacts("noc");
+var company = await client.GetCompanyFacts("brk-b");
 
-var concept = await client.GetCompanyConcept("noc", Taxonomy.Dei, "EntityCommonStockSharesOutstanding");
+var concept = await client.GetCompanyConcept("brk-b", Taxonomy.Dei, "EntityCommonStockSharesOutstanding");
+Console.Read();

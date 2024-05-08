@@ -48,6 +48,7 @@ internal class StringToExchangeTypeArrayConverter : JsonConverter<ExchangeType[]
                     "xtal" => ExchangeType.XTAL,
                     "xris" => ExchangeType.XRIS,
                     "xlit" => ExchangeType.XLIT,
+                    "otc" => ExchangeType.OTC,
                     _ => ExchangeType.Unknown
                 });
             }

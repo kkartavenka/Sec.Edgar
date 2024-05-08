@@ -23,4 +23,5 @@ public enum ExchangeType
     XTAL,
     XRIS,
     XLIT,
+    OTC,
 }

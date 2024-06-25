@@ -60,3 +60,5 @@ The following example demonstrate obtaining all `EntityCommonStockSharesOutstand
 ```csharp
 var concept = await client.GetCompanyConcept("noc", Taxonomy.Dei, "EntityCommonStockSharesOutstanding");
 ```
+
+> For a set of examples using various endpoints please see: [Sec.Edgar.Example](https://github.com/kkartavenka/Sec.Edgar/tree/main/Sec.Edgar.Example)

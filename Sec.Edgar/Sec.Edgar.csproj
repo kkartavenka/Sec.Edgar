@@ -11,8 +11,8 @@
         <Description>The library to query SEC EDGAR</Description>
         <PackageProjectUrl>https://github.com/kkartavenka/Sec.Edgar</PackageProjectUrl>
         <RepositoryUrl>https://github.com/kkartavenka/Sec.Edgar</RepositoryUrl>
-        <PackageTags>sec, edgar, edgar-api</PackageTags>
-        <Version>1.0.1</Version>
+        <PackageTags>sec, edgar, edgar-api, finance-api</PackageTags>
+        <Version>1.1.0</Version>
     </PropertyGroup>
 
     <ItemGroup>

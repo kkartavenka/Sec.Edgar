@@ -12,8 +12,8 @@ public class CompanyConceptRecord
     [JsonPropertyName("end"), JsonConverter(typeof(StringToDateTimeConverter))]
     public required DateTime? EndDate { get; init; }
 
-    [JsonPropertyName("val"), JsonConverter(typeof(StringToNumericConverter<long>))]
-    public long? Value { get; init; }
+    [JsonPropertyName("val"), JsonConverter(typeof(StringToNumericConverter<double>))]
+    public double? Value { get; init; }
 
     [JsonPropertyName("accn")] public required string AccessionNumber { get; init; }
 

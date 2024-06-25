@@ -18,18 +18,21 @@ public class EdgarClient
         var httpClientWrapper = HttpClientWrapper.GetInstance(clientInfo);
         ICikProvider cikProvider = clientInfo.ProviderType switch
         {
-            CikProviderType.None => new CikEmptyProvider(clientInfo.CikIdentifierLength,
+            CikProviderType.None => new CikEmptyProvider(clientInfo.GetLogger<CikEmptyProvider>(), clientInfo.CikIdentifierLength,
                 clientInfo.FillCikIdentifierWithZeroes, CancellationToken.None),
-            CikProviderType.Json => new CikJsonProvider(httpClientWrapper.GetStreamHandler(), clientInfo.CikIdentifierLength,
+            CikProviderType.Json => new CikJsonProvider(clientInfo.GetLogger<CikJsonProvider>(), httpClientWrapper.GetStreamHandler(),
+                clientInfo.CikIdentifierLength,
                 clientInfo.FillCikIdentifierWithZeroes, clientInfo.CikSource, _cts.Token),
+
             //CikProviderType.Text => new CikTextProvider(httpClientWrapper.GetStreamHandler(), clientInfo.CikIdentifierLength,
             //    clientInfo.FillCikIdentifierWithZeroes, clientInfo.CikSource, _cts.Token),
-            _ => throw new ArgumentOutOfRangeException(nameof(clientInfo.ProviderType), clientInfo.ProviderType, "Unsupported provider")
+            _ => throw new ArgumentOutOfRangeException(nameof(clientInfo.ProviderType), clientInfo.ProviderType,
+                "Unsupported provider")
         };
         
-        _submissionProvider = new SubmissionProvider(cikProvider, _cts.Token);
-        _factProvider = new CompanyFactProvider(cikProvider, _cts.Token);
-        _conceptProvider = new CompanyConceptProvider(cikProvider, _cts.Token);
+        _submissionProvider = new SubmissionProvider(cikProvider, clientInfo.GetLogger<SubmissionProvider>(), _cts.Token);
+        _factProvider = new CompanyFactProvider(cikProvider, clientInfo.GetLogger<CompanyFactProvider>(), _cts.Token);
+        _conceptProvider = new CompanyConceptProvider(cikProvider, clientInfo.GetLogger<CompanyConceptProvider>(), _cts.Token);
     }
 
     public async Task<Submission?> GetAllSubmissions(string identifier) => await _submissionProvider.GetAll(identifier);

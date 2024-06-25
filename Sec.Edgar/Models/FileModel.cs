@@ -69,5 +69,5 @@ public class FileModel
 
     public async Task<Uri> GetLink() =>
         new Uri(
-            $"{EdgarConstants.ArchiveDocument}/{await Submission.CikProvider.GetAsync(Submission.CentralIndexKey)}/{AccessionNumber.Replace("-", "")}/{PrimaryDocument}");
+            $"{EdgarConstants.ArchiveDocument}/{await Submission.CikProvider.GetFirstAsync(Submission.CentralIndexKey)}/{AccessionNumber.Replace("-", "")}/{PrimaryDocument}");
 }

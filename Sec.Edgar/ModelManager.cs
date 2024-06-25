@@ -6,12 +6,9 @@ namespace Sec.Edgar;
 
 internal class ModelManager
 {
-    private readonly object _lock = new();
     private readonly int _cikIdentifierLength;
     private readonly bool _fillCikIdentifierWithZeroes;
-    
-    private Dictionary<int, EdgarTickerModel> _cikDict = new();
-    private Dictionary<string, EdgarTickerModel> _tickerDict = new();
+    private IReadOnlyList<EdgarTickerModel>? _tickersInfo;
 
     internal ModelManager(int cikIdentifierLength, bool fillCikIdentifierWithZeroes)
     {
@@ -19,63 +16,60 @@ internal class ModelManager
         _fillCikIdentifierWithZeroes = fillCikIdentifierWithZeroes;
     }
 
-    internal bool IsDataAvailable() => _cikDict.Any() && _tickerDict.Any();
+    internal bool IsDataAvailable() => _tickersInfo is not null && _tickersInfo.Any();
 
-    internal event EventHandler<ExceptionEventArgs>? ExceptionHandler;
+    public event EventHandler<ExceptionEventArgs>? ExceptionHandler;
 
     internal void LoadData(List<EdgarTickerModel> tickersInfo)
     {
-        lock (_lock)
+        var groupedTickerInfo = tickersInfo
+            .GroupBy(x => (x.Cik, x.Ticker))
+            .Select(x => (x.Count(), x.Key.Cik, x.Key.Ticker, x.ToList()))
+            .ToList();
+        
+        groupedTickerInfo.Where(x => x.Item1 != 1).ToList().ForEach(x =>
         {
-            _cikDict = new Dictionary<int, EdgarTickerModel>(tickersInfo.Count);
-            _tickerDict = new Dictionary<string, EdgarTickerModel>(tickersInfo.Count);
-                    
-            foreach (var tickerInfo in tickersInfo)
-            {
-                if (!_cikDict.TryAdd(tickerInfo.Cik, tickerInfo))
-                {
-                    var exceptionMessage =
-                        $"The dictionary contains item with CIK {tickerInfo.Cik}. Existing ticket: {_cikDict[tickerInfo.Cik].Ticker}, trying adding: {tickerInfo.Ticker}";
-                    ExceptionHandler?.Invoke(this, new ExceptionEventArgs(new CikDuplicateException(exceptionMessage), false));
-                }
+            var exceptionMessage = $"The dictionary contains item with CIK {x.Cik} and ticker {x.Ticker}";
+            ExceptionHandler?.Invoke(this, new ExceptionEventArgs(new CikDuplicateException(exceptionMessage), false));
+        });
 
-                var tickerDictKey = tickerInfo.Ticker.ToLower().Trim();
-                if (!_tickerDict.TryAdd(tickerDictKey, tickerInfo))
-                {
-                    var exceptionMessage =
-                        $"The dictionary contains item with ticker {tickerInfo.Ticker}. Existing CIK: {_tickerDict[tickerDictKey].Cik}, trying adding: {tickerInfo.Cik}";
-                    ExceptionHandler?.Invoke(this, new ExceptionEventArgs(new TickerDuplicateException(exceptionMessage), false));
-                }
-            }
-        }
+        var uniqueTickerInfo = new List<EdgarTickerModel>(groupedTickerInfo.Count);
+        groupedTickerInfo.ForEach(x => uniqueTickerInfo.Add(x.Item4.First()));
+
+        _tickersInfo = uniqueTickerInfo;
     }
 
     internal string GetCik(string identifier)
     {
         var tickerInfo = GetTickerInfo(identifier);
-        return tickerInfo is null ? string.Empty : FillStringWithZeroes(tickerInfo.CikStr);
+        return tickerInfo is null ? string.Empty : FillStringWithZeroes(tickerInfo.First().CikStr);
     }
 
     internal string GetCik(int identifier)
     {
         var tickerInfo = GetTickerInfo(identifier);
-        return tickerInfo is null ? string.Empty : FillStringWithZeroes(tickerInfo.CikStr);
+        return tickerInfo is null ? string.Empty : FillStringWithZeroes(tickerInfo.First().CikStr);
     }
 
-    internal EdgarTickerModel? GetTickerInfo(int identifier)
+    internal List<EdgarTickerModel>? GetTickerInfo(int identifier)
     {
-        var tickerInfo =_cikDict.GetValueOrDefault(identifier);
-        if (tickerInfo is null)
+        if (!IsDataAvailable())
+        {
+            ExceptionHandler?.Invoke(this, new ExceptionEventArgs(new Exception("CIK data is not available/loaded"), true));
+        }
+        
+        var selectedItems = _tickersInfo?.Where(x => x.Cik == identifier).ToList();
+        if (selectedItems is null)
         {
             ExceptionHandler?.Invoke(this,
                 new ExceptionEventArgs(new Exception($"Cannot find CIK through provided identifier: {identifier}"),
                     false));
         }
 
-        return tickerInfo;
+        return selectedItems;
     }
 
-    internal EdgarTickerModel? GetTickerInfo(string identifier)
+    internal List<EdgarTickerModel>? GetTickerInfo(string identifier)
     {
         var cikNumber = TryGetNumericCik(identifier);
 
@@ -84,31 +78,27 @@ internal class ModelManager
             return GetTickerInfo(cikNumber.Value);
         }
 
-        var findByTicker = _tickerDict.GetValueOrDefault(identifier.ToLower().Trim());
+        var findByTicker = _tickersInfo?
+            .Where(x => string.Equals(x.Ticker, identifier.Trim(), StringComparison.InvariantCultureIgnoreCase))
+            .ToList();
+        
         if (findByTicker is not null)
         {
             return findByTicker;
         }
 
-        var findByName = _cikDict
-            .Where(x => x.Value.Title.Contains(identifier, StringComparison.InvariantCultureIgnoreCase))
+        var findByName = _tickersInfo?
+            .Where(x => x.Title.Contains(identifier, StringComparison.InvariantCultureIgnoreCase))
             .ToList();
 
-        if (!findByName.Any())
+        if (findByName is null || findByName.Count == 0)
         {
             ExceptionHandler?.Invoke(this,
                 new ExceptionEventArgs(new Exception($"Cannot find CIK through provided identifier: {identifier}"),
                     false));
         }
 
-        if (findByName.Count > 1)
-        {
-            ExceptionHandler?.Invoke(this,
-                new ExceptionEventArgs(
-                    new Exception($"Found more than one match for provided identifier: {identifier}"), false));
-        }
-
-        return findByName.First().Value;
+        return findByName;
     }
     
     private int? TryGetNumericCik(string identifier)

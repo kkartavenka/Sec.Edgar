@@ -1,5 +1,8 @@
+using System.Runtime.CompilerServices;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using Sec.Edgar.Models;
+using Sec.Edgar.Models.Exceptions;
 
 namespace Sec.Edgar.CikProviders;
 
@@ -10,7 +13,12 @@ internal class CikJsonProvider : CikBaseProvider
     private readonly SourceType _sourceType;
     private readonly Uri? _uri;
 
-    public CikJsonProvider(Func<Uri, CancellationToken, Task<Stream>> getStreamHandler, int cikIdentifierLength, bool fillCikIdentifierWithZeroes, string absoluteSourceLocation, CancellationToken ctx) : base(cikIdentifierLength, fillCikIdentifierWithZeroes, ctx)
+    public CikJsonProvider(
+        ILogger? logger,
+        Func<Uri, CancellationToken, Task<Stream>> getStreamHandler,
+        int cikIdentifierLength, bool fillCikIdentifierWithZeroes, 
+        string absoluteSourceLocation, CancellationToken ctx) 
+        : base(logger, cikIdentifierLength, fillCikIdentifierWithZeroes, ctx)
     {
         _getStreamHandler = getStreamHandler;
         _sourceType = GetSourceType(absoluteSourceLocation);
@@ -23,6 +31,7 @@ internal class CikJsonProvider : CikBaseProvider
 
     public override async Task UpdateCikDataset()
     {
+        Logger?.LogInformation($"{GetLogPrefix()}: invoked for {nameof(_sourceType)}: {_sourceType}");
         var dataset = _sourceType switch
         {
             SourceType.Web => await TryDeserializeFromWeb(),
@@ -33,15 +42,17 @@ internal class CikJsonProvider : CikBaseProvider
         if (dataset is not null)
         {
             CikDataManager.LoadData(dataset);
+            Logger?.LogInformation($"{GetLogPrefix()}: completed");
         }
         else
         {
-            LogException(new Exception("Failed to update"), false);
+            LogException(this, new ExceptionEventArgs(new Exception("Failed to update"), LogLevel.Warning));
         }
     }
 
-    public override async Task<string> GetAsync(string identifier)
+    public override async Task<string> GetFirstAsync(string identifier)
     {
+        Logger?.LogInformation($"{GetLogPrefix()}: invoked with {nameof(identifier)}: {identifier}");
         if (!CikDataManager.IsDataAvailable())
         {
             await UpdateCikDataset();
@@ -50,8 +61,9 @@ internal class CikJsonProvider : CikBaseProvider
         return CikDataManager.GetCik(identifier);
     }
     
-    public override async Task<string> GetAsync(int identifier)
+    public override async Task<string> GetFirstAsync(int identifier)
     {
+        Logger?.LogInformation($"{GetLogPrefix()}: invoked with {nameof(identifier)}: {identifier}");
         if (!CikDataManager.IsDataAvailable())
         {
             await UpdateCikDataset();
@@ -60,8 +72,9 @@ internal class CikJsonProvider : CikBaseProvider
         return CikDataManager.GetCik(identifier);
     }
 
-    public override async Task<EdgarTickerModel?> GetRecordAsync(int cikNumber)
+    public override async Task<List<EdgarTickerModel>?> GetAllAsync(int cikNumber)
     {
+        Logger?.LogInformation($"{GetLogPrefix()}: invoked with {nameof(cikNumber)}: {cikNumber}");
         if (!CikDataManager.IsDataAvailable())
         {
             await UpdateCikDataset();
@@ -70,8 +83,9 @@ internal class CikJsonProvider : CikBaseProvider
         return CikDataManager.GetTickerInfo(cikNumber);
     }
 
-    public override async Task<EdgarTickerModel?> GetRecordAsync(string identifier)
+    public override async Task<List<EdgarTickerModel>?> GetAllAsync(string identifier)
     {
+        Logger?.LogInformation($"{GetLogPrefix()}: invoked with {nameof(identifier)}: {identifier}");
         if (!CikDataManager.IsDataAvailable())
         {
             await UpdateCikDataset();
@@ -84,13 +98,14 @@ internal class CikJsonProvider : CikBaseProvider
     {
         if (_getStreamHandler is null)
         {
-            LogException(new ArgumentNullException($"{nameof(_getStreamHandler)} is null"), true);
+            LogException(this,
+                new ExceptionEventArgs(new ArgumentNullException($"{nameof(_getStreamHandler)} is null"), LogLevel.Critical , true));
             return null;
         }
         
         if (_uri is null)
         {
-            LogException(new ArgumentNullException($"{nameof(_uri)} is null"), true);
+            LogException(this, new ExceptionEventArgs(new ArgumentNullException($"{nameof(_uri)} is null"), LogLevel.Critical, true));
             return null;
         }
         
@@ -101,7 +116,7 @@ internal class CikJsonProvider : CikBaseProvider
         }
         catch (Exception e)
         {
-            LogException(e, false);
+            LogException(this, new ExceptionEventArgs(e, LogLevel.Error));
             return null;
         }
     }
@@ -115,7 +130,7 @@ internal class CikJsonProvider : CikBaseProvider
         }
         catch (Exception e)
         {
-            LogException(e, false);
+            LogException(this, new ExceptionEventArgs(e, LogLevel.Error));
             return null;
         }
     }
@@ -130,7 +145,8 @@ internal class CikJsonProvider : CikBaseProvider
 
             if (parsedResult is null)
             {
-                LogException(new Exception($"{_absoluteSourceLocation} contains no values"), false);
+                LogException(this,
+                    new ExceptionEventArgs(new Exception($"{_absoluteSourceLocation} contains no values"), LogLevel.Warning));
                 return null;
             }
 
@@ -138,22 +154,15 @@ internal class CikJsonProvider : CikBaseProvider
         }
         catch (JsonException e)
         {
-            LogException(e, false);
+            LogException(this, new ExceptionEventArgs(e, LogLevel.Error));
             return null;
         }
         catch (Exception e)
         {
-            LogException(e, true);
+            LogException(this, new ExceptionEventArgs(e, LogLevel.Error, true));
             return null;
         }
     }
-    
-    private void LogException(Exception exception, bool throwException)
-    {
-        Exceptions.TryAdd(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), exception);
-        if (throwException)
-        {
-            throw exception;
-        }
-    }
+
+    private static string GetLogPrefix([CallerMemberName] string caller = "") => $"{nameof(CikJsonProvider)}::{caller}";
 }

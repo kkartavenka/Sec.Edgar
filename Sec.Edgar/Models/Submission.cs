@@ -19,14 +19,13 @@ public class Submission
         InsiderTransactionForIssuerExists = rawModel.InsiderTransactionForIssuerExists == 1;
         InsiderTransactionForOwnerExists = rawModel.InsiderTransactionForOwnerExists == 1;
         CompanyName = rawModel.CompanyName;
-        Tickers = rawModel.Tickers;
-        Exchanges = rawModel.Exchanges;
         EmployerIdentificationNumber = rawModel.EmployerIdentificationNumber;
         Description = rawModel.Description;
         Category = rawModel.Category;
         StateOfIncorporation = rawModel.StateOfIncorporation;
         StateOfIncorporationDescription = rawModel.StateOfIncorporationDescription;
         FormerNames = rawModel.FormerNames;
+        InitTickersArray(rawModel.Tickers, rawModel.Exchanges);
 
         if (DateOnly.TryParseExact(rawModel.FiscalYearEnd, "MMdd", CultureInfo.InvariantCulture, DateTimeStyles.None,
                 out var dt))
@@ -45,11 +44,10 @@ public class Submission
     public bool InsiderTransactionForOwnerExists { get; }
     public bool InsiderTransactionForIssuerExists { get; }
     public string CompanyName { get; }
-    public string[] Tickers { get;  }
-    public ExchangeType[] Exchanges { get;}
+    public Ticker[] Tickers { get; private set; }
     public string EmployerIdentificationNumber { get; }
     public string Description { get; }
-    public string Category { get;  }
+    public string Category { get; }
     public DateOnly FiscalYearEnd { get; }
     public string StateOfIncorporation { get; }
     public string StateOfIncorporationDescription { get; }
@@ -90,5 +88,18 @@ public class Submission
         var originalFilingSize = _filings.Length;
         Array.Resize(ref _filings, originalFilingSize + incomingDataLength);
         Array.Copy(newDataArray, 0, _filings, originalFilingSize, incomingDataLength);
+    }
+
+    private void InitTickersArray(IReadOnlyList<string> tickers, IReadOnlyList<ExchangeType> exchanges)
+    {
+        Tickers = new Ticker[tickers.Count];
+        for (var i = 0; i < tickers.Count; i++)
+        {
+            Tickers[i] = new Ticker
+            {
+                Name = tickers[i],
+                Exchange = exchanges[i]
+            };
+        }
     }
 }

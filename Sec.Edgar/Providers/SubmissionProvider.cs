@@ -1,4 +1,6 @@
+using System.Runtime.CompilerServices;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using Sec.Edgar.CikProviders;
 using Sec.Edgar.Models;
 using Sec.Edgar.Models.Edgar;
@@ -7,23 +9,27 @@ namespace Sec.Edgar.Providers;
 
 internal class SubmissionProvider : BaseProvider
 {
-    internal SubmissionProvider(ICikProvider cikProvider, CancellationToken ctx) : base(cikProvider, ctx) { }
+    internal SubmissionProvider(ICikProvider cikProvider, ILogger? logger, CancellationToken ctx) : base(cikProvider, logger, ctx) { }
 
     internal async Task<Submission?> GetAll(string identifier)
     {
-        var cik = await CikProvider.GetAsync(identifier);
+        Logger?.LogInformation($"{GetLogPrefix()}: invoked for {nameof(identifier)} {identifier}");
+        var cik = await CikProvider.GetFirstAsync(identifier);
         return await GetImplementation(cik);
     }
     
     internal async Task<Submission?> GetAll(int identifier)
     {
-        var cik = await CikProvider.GetAsync(identifier);
+        Logger?.LogInformation($"{GetLogPrefix()}: invoked for {nameof(identifier)} {identifier}");
+        var cik = await CikProvider.GetFirstAsync(identifier);
         return await GetImplementation(cik);
     }
 
     private async Task<Submission?> GetImplementation(string cikStr)
     {
-        var response = await HttpClientWrapper.GetStreamAsync(GetUri($"CIK{cikStr}.json"), Ctx);
+        var uri = GetUri($"CIK{cikStr}.json");
+        Logger?.LogInformation($"{GetLogPrefix}: Requested CIK: {cikStr}, Uri: {uri.AbsoluteUri}");
+        var response = await HttpClientWrapper.GetStreamAsync(uri, Ctx);
         return await TryDeserialize(response);
     }
 
@@ -49,4 +55,6 @@ internal class SubmissionProvider : BaseProvider
     }
     
     private Uri GetUri(string file) => new($"https://data.sec.gov/submissions/{file}");
+    
+    private static string GetLogPrefix([CallerMemberName] string caller = "") => $"{nameof(SubmissionProvider)}::{caller}";
 }

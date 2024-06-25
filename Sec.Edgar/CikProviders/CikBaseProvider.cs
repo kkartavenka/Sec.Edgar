@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+using Microsoft.Extensions.Logging;
 using Sec.Edgar.Models;
 using Sec.Edgar.Models.Exceptions;
 
@@ -6,52 +6,53 @@ namespace Sec.Edgar.CikProviders;
 
 internal abstract class CikBaseProvider : ICikProvider
 {
-    protected CikBaseProvider(int cikIdentifierLength, bool fillCikIdentifierWithZeroes, CancellationToken ctx)
+    internal readonly ILogger? Logger;
+    internal readonly ModelManager CikDataManager;
+
+    protected CikBaseProvider(ILogger? logger, int cikIdentifierLength, bool fillCikIdentifierWithZeroes,
+        CancellationToken ctx)
     {
         CikDataManager = new ModelManager(cikIdentifierLength, fillCikIdentifierWithZeroes);
-        CikDataManager.ExceptionHandler += ModelManagerOnExceptionHandler;
+        CikDataManager.ExceptionHandler += LogException;
         Ctx = ctx;
+        Logger = logger;
     }
 
-    private void ModelManagerOnExceptionHandler(object? sender, ExceptionEventArgs e)
-    {
-        Console.WriteLine($"Exception: {sender}, e: {e.Exception}");
-        Exceptions.TryAdd(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), e.Exception);
-        if (e.ReThrow)
-        {
-            throw e.Exception;
-        }
-    }
+    protected CancellationToken Ctx { get; init; }
 
-    public virtual Task<string> GetAsync(string identifier)
-    {
-        throw new NotImplementedException();
-    }
-    
-    public virtual Task<string> GetAsync(int cikNumber)
-    {
-        throw new NotImplementedException();
-    }
-
-    public virtual Task<EdgarTickerModel?> GetRecordAsync(int cikNumber)
-    {
-        throw new NotImplementedException();
-    }
-
-    public virtual Task<EdgarTickerModel?> GetRecordAsync(string identifier)
-    {
-        throw new NotImplementedException();
-    }
-
-    public ConcurrentDictionary<long, Exception> Exceptions { get; } = new();
     public virtual Task UpdateCikDataset()
     {
         throw new NotImplementedException();
     }
 
-    public CancellationToken Ctx { get; init; }
-    
-    internal readonly ModelManager CikDataManager;
+    public virtual Task<string> GetFirstAsync(string identifier)
+    {
+        throw new NotImplementedException();
+    }
+
+    public virtual Task<string> GetFirstAsync(int cikNumber)
+    {
+        throw new NotImplementedException();
+    }
+
+    public virtual Task<List<EdgarTickerModel>?> GetAllAsync(int cikNumber)
+    {
+        throw new NotImplementedException();
+    }
+
+    public virtual Task<List<EdgarTickerModel>?> GetAllAsync(string identifier)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal void LogException(object? sender, ExceptionEventArgs e)
+    {
+        Logger?.Log(e.LoggedLevel, $"{DateTime.Now:u}. Sender: {sender}. Exception: {e.LoggedException}");
+        if (e.ReThrow)
+        {
+            throw e.LoggedException;
+        }
+    }
 
     protected SourceType GetSourceType(string absoluteSourceLocation)
     {
@@ -60,11 +61,8 @@ internal abstract class CikBaseProvider : ICikProvider
             return SourceType.Web;
         }
 
-        if (File.Exists(absoluteSourceLocation))
-        {
-            return SourceType.Local;
-        }
-
-        return SourceType.None;
+        return File.Exists(absoluteSourceLocation)
+            ? SourceType.Local
+            : SourceType.None;
     }
 }

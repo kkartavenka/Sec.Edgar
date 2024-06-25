@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Logging;
 using Sec.Edgar.Enums;
 
 namespace Sec.Edgar;
@@ -16,7 +17,7 @@ public class ClientInfoBuilder
     private int _cikIdentifierFixedLength = MinCikIdentifierLength;
     private bool _fillCikIdentifierWithZeroes = true;
     private CikProviderType _cikProviderType = CikProviderType.None;
-    
+    private ILoggerFactory? _loggerFactory;
     private string? _userAgent;
     private int _rateLimit = 10;
     private string _cikSource = string.Empty;
@@ -74,6 +75,12 @@ public class ClientInfoBuilder
         return this;
     }
 
+    public ClientInfoBuilder WithLoggerFactory(ILoggerFactory loggerFactory)
+    {
+        _loggerFactory = loggerFactory;
+        return this;
+    }
+
     public ClientInfo Build()
     {
         if (_userAgent == null)
@@ -83,6 +90,7 @@ public class ClientInfoBuilder
 
         return new ClientInfo
         {
+            LoggerFactory = _loggerFactory,
             RateLimit = _rateLimit,
             UserAgent = _userAgent,
             TickerJsonAddress = _companyTickerUri,

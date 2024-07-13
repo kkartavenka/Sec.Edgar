@@ -61,4 +61,6 @@ The following example demonstrate obtaining all `EntityCommonStockSharesOutstand
 var concept = await client.GetCompanyConcept("noc", Taxonomy.Dei, "EntityCommonStockSharesOutstanding");
 ```
 
+> The library targets .Net Standard 2.0 and the latests .NET. If possible target the latest .NET since it uses optimization coming from System.Text.Json
+
 > For a set of examples using various endpoints please see: [Sec.Edgar.Example](https://github.com/kkartavenka/Sec.Edgar/tree/main/Sec.Edgar.Example)

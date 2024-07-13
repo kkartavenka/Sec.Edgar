@@ -1,10 +1,12 @@
-namespace Sec.Edgar.Enums;
-
-public enum ExchangeType
+namespace Sec.Edgar.Enums
 {
-    Unknown,
-    NYSE,
-    Nasdaq,
-    Euronext,
-    OTC,
+    public enum ExchangeType
+    {
+        Unknown,
+        Empty,
+        NYSE,
+        Nasdaq,
+        Euronext,
+        OTC
+    }
 }

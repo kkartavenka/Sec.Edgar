@@ -1,14 +1,15 @@
-namespace Sec.Edgar.Models.Exceptions;
+using System;
 
-public class CikDuplicateException : Exception
+namespace Sec.Edgar.Models.Exceptions
 {
-    public CikDuplicateException(string message) : base(message)
+    public class CikDuplicateException : Exception
     {
-        
-    }
-    
-    public CikDuplicateException(string message, Exception inner) : base(message, inner)
-    {
-        
+        public CikDuplicateException(string message) : base(message)
+        {
+        }
+
+        public CikDuplicateException(string message, Exception inner) : base(message, inner)
+        {
+        }
     }
 }

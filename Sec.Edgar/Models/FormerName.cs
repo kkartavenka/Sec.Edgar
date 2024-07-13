@@ -1,16 +1,18 @@
-using System.Text.Json.Serialization;
-using Sec.Edgar.Converters;
+using System;
 
-namespace Sec.Edgar.Models;
-
-public class FormerName
+namespace Sec.Edgar.Models
 {
-    [JsonPropertyName("name")]
-    public required string Name { get; init; }
-    
-    [JsonPropertyName("from"), JsonConverter(typeof(StringToDateTimeConverter))]
-    public required DateTime? From { get; init; }
-    
-    [JsonPropertyName("to"), JsonConverter(typeof(StringToDateTimeConverter))]
-    public required DateTime? To { get; init; }
+    public class FormerName
+    {
+        public FormerName(string name, DateTime from, DateTime to)
+        {
+            Name = name;
+            From = from;
+            To = to;
+        }
+
+        public string Name { get; }
+        public DateTime From { get; }
+        public DateTime To { get; }
+    }
 }

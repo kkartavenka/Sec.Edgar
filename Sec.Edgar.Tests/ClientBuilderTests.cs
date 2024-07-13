@@ -11,7 +11,7 @@ public class Tests
         Assert.Throws<ArgumentException>(() => builder.WithUserAgent("Failed agent"));
         Assert.Throws<ArgumentException>(() => builder.WithRateLimit(0));
         Assert.Throws<ArgumentOutOfRangeException>(() => builder.WithCikIdentifierLength(1));
-        Assert.Throws<ValidationException>(() => builder.Build());
+        Assert.Throws<Exception>(() => builder.Build());
     }
 
     [Test]
@@ -20,6 +20,6 @@ public class Tests
         var clientInfo = new ClientInfoBuilder()
             .WithUserAgent("Company company@company.org")
             .Build();
-        Assert.IsTrue(clientInfo is not null);
+        Assert.That(clientInfo, Is.Not.EqualTo(null));
     }
 }

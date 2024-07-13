@@ -1,8 +1,9 @@
-namespace Sec.Edgar.Enums;
-
-public enum CikProviderType
+namespace Sec.Edgar.Enums
 {
-    None,
-    Json,
-    Text,
+    public enum CikProviderType
+    {
+        None,
+        Json,
+        Text
+    }
 }

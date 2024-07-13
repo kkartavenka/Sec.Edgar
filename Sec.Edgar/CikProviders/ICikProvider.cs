@@ -1,13 +1,15 @@
-using Sec.Edgar.Models;
-using Sec.Edgar.Models.Exceptions;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Sec.Edgar.Models.Edgar;
 
-namespace Sec.Edgar.CikProviders;
-
-internal interface ICikProvider
+namespace Sec.Edgar.CikProviders
 {
-    internal Task<string> GetFirstAsync(string identifier);
-    internal Task<string> GetFirstAsync(int cikNumber);
-    internal Task<List<EdgarTickerModel>?> GetAllAsync(int cikNumber);
-    internal Task<List<EdgarTickerModel>?> GetAllAsync(string identifier);
-    internal Task UpdateCikDataset();
+    internal interface ICikProvider
+    {
+        Task<string> GetFirstAsync(string identifier);
+        Task<string> GetFirstAsync(int cikNumber);
+        Task<List<EdgarTickerJsonDto>> GetAllAsync(int cikNumber);
+        Task<List<EdgarTickerJsonDto>> GetAllAsync(string identifier);
+        Task UpdateCikDataset();
+    }
 }

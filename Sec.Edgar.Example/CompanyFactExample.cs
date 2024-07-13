@@ -8,6 +8,6 @@ public class CompanyFactExample(EdgarClient client)
         
         var company = await client.GetCompanyFacts("19617");
         Console.WriteLine($"Entity: {company?.EntityName}, CIK: {company?.CentralIndexKey}");
-        Console.WriteLine($"Available facts taxonomies: {string.Join(", ", company.Facts.Select(x => x.Key))}");
+        Console.WriteLine($"Available facts taxonomies: {string.Join(", ", company.Facts.Select(x => $"{x.Key} [{x.Value.Count}]"))}");
     }
 }

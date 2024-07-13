@@ -1,14 +1,15 @@
-namespace Sec.Edgar.Models.Exceptions;
+using System;
 
-internal class TickerDuplicateException : Exception
+namespace Sec.Edgar.Models.Exceptions
 {
-    internal TickerDuplicateException(string message) : base(message)
+    internal class TickerDuplicateException : Exception
     {
-        
-    }
+        internal TickerDuplicateException(string message) : base(message)
+        {
+        }
 
-    internal TickerDuplicateException(string message, Exception inner) : base(message, inner)
-    {
-        
+        internal TickerDuplicateException(string message, Exception inner) : base(message, inner)
+        {
+        }
     }
 }

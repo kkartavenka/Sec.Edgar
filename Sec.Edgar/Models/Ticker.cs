@@ -1,9 +1,16 @@
 using Sec.Edgar.Enums;
 
-namespace Sec.Edgar.Models;
-
-public class Ticker
+namespace Sec.Edgar.Models
 {
-    public required string Name { get; init; }
-    public required ExchangeType Exchange { get; init; }
+    public class Ticker
+    {
+        public Ticker(string name, ExchangeType exchangeType)
+        {
+            Name = name;
+            Exchange = exchangeType;
+        }
+
+        public string Name { get; }
+        public ExchangeType Exchange { get; }
+    }
 }

@@ -1,168 +1,219 @@
-using System.Runtime.CompilerServices;
+#if NET6_0_OR_GREATER
 using System.Text.Json;
+#elif NETSTANDARD2_0
+using Newtonsoft.Json;
+using Sec.Edgar.Extensions;
+#endif
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Sec.Edgar.Models;
+using Sec.Edgar.Models.Edgar;
 using Sec.Edgar.Models.Exceptions;
 
-namespace Sec.Edgar.CikProviders;
-
-internal class CikJsonProvider : CikBaseProvider
+namespace Sec.Edgar.CikProviders
 {
-    private Func<Uri, CancellationToken, Task<Stream>>? _getStreamHandler;
-    private readonly string _absoluteSourceLocation;
-    private readonly SourceType _sourceType;
-    private readonly Uri? _uri;
-
-    public CikJsonProvider(
-        ILogger? logger,
-        Func<Uri, CancellationToken, Task<Stream>> getStreamHandler,
-        int cikIdentifierLength, bool fillCikIdentifierWithZeroes, 
-        string absoluteSourceLocation, CancellationToken ctx) 
-        : base(logger, cikIdentifierLength, fillCikIdentifierWithZeroes, ctx)
+    internal class CikJsonProvider : CikBaseProvider
     {
-        _getStreamHandler = getStreamHandler;
-        _sourceType = GetSourceType(absoluteSourceLocation);
-        if (_sourceType == SourceType.Web)
-        {
-            _uri = new Uri(absoluteSourceLocation);
-        }
-        _absoluteSourceLocation = absoluteSourceLocation;
-    }
+        private readonly string _absoluteSourceLocation;
+        private readonly SourceType _sourceType;
+        private readonly Uri _uri;
+        private Func<Uri, CancellationToken, Task<Stream>> _getStreamHandler;
 
-    public override async Task UpdateCikDataset()
-    {
-        Logger?.LogInformation($"{GetLogPrefix()}: invoked for {nameof(_sourceType)}: {_sourceType}");
-        var dataset = _sourceType switch
+        public CikJsonProvider(
+            ILogger logger,
+            Func<Uri, CancellationToken, Task<Stream>> getStreamHandler,
+            int cikIdentifierLength, bool fillCikIdentifierWithZeroes,
+            string absoluteSourceLocation, CancellationToken ctx)
+            : base(logger, cikIdentifierLength, fillCikIdentifierWithZeroes, ctx)
         {
-            SourceType.Web => await TryDeserializeFromWeb(),
-            SourceType.Local => await TryDeserializeFromFile(),
-            _ => null
-        };
+            _getStreamHandler = getStreamHandler;
+            _sourceType = GetSourceType(absoluteSourceLocation);
+            if (_sourceType == SourceType.Web)
+            {
+                _uri = new Uri(absoluteSourceLocation);
+            }
 
-        if (dataset is not null)
-        {
-            CikDataManager.LoadData(dataset);
-            Logger?.LogInformation($"{GetLogPrefix()}: completed");
-        }
-        else
-        {
-            LogException(this, new ExceptionEventArgs(new Exception("Failed to update"), LogLevel.Warning));
-        }
-    }
-
-    public override async Task<string> GetFirstAsync(string identifier)
-    {
-        Logger?.LogInformation($"{GetLogPrefix()}: invoked with {nameof(identifier)}: {identifier}");
-        if (!CikDataManager.IsDataAvailable())
-        {
-            await UpdateCikDataset();
+            _absoluteSourceLocation = absoluteSourceLocation;
         }
 
-        return CikDataManager.GetCik(identifier);
-    }
-    
-    public override async Task<string> GetFirstAsync(int identifier)
-    {
-        Logger?.LogInformation($"{GetLogPrefix()}: invoked with {nameof(identifier)}: {identifier}");
-        if (!CikDataManager.IsDataAvailable())
+        public override async Task UpdateCikDataset()
         {
-            await UpdateCikDataset();
+            Logger?.LogInformation($"{GetLogPrefix()}: invoked for {nameof(_sourceType)}: {_sourceType}");
+            List<EdgarTickerJsonDto> dataset = null;
+            switch (_sourceType)
+            {
+                case SourceType.Web:
+                    dataset = await TryDeserializeFromWeb();
+                    break;
+                case SourceType.Local:
+#if NET6_0_OR_GREATER
+                    dataset = await TryDeserializeFromFile();
+#elif NETSTANDARD2_0
+                    dataset = TryDeserializeFromFile();
+#endif
+                    break;
+            }
+
+            if (dataset != null)
+            {
+                CikDataManager.LoadData(dataset);
+                Logger?.LogInformation($"{GetLogPrefix()}: completed");
+            }
+            else
+            {
+                LogException(this, new ExceptionEventArgs(new Exception("Failed to update"), LogLevel.Warning));
+            }
         }
 
-        return CikDataManager.GetCik(identifier);
-    }
-
-    public override async Task<List<EdgarTickerModel>?> GetAllAsync(int cikNumber)
-    {
-        Logger?.LogInformation($"{GetLogPrefix()}: invoked with {nameof(cikNumber)}: {cikNumber}");
-        if (!CikDataManager.IsDataAvailable())
+        public override async Task<string> GetFirstAsync(string identifier)
         {
-            await UpdateCikDataset();
+            Logger?.LogInformation($"{GetLogPrefix()}: invoked with {nameof(identifier)}: {identifier}");
+            if (!CikDataManager.IsDataAvailable())
+            {
+                await UpdateCikDataset();
+            }
+
+            return CikDataManager.GetCik(identifier);
         }
 
-        return CikDataManager.GetTickerInfo(cikNumber);
-    }
+        public override async Task<string> GetFirstAsync(int identifier)
+        {
+            Logger?.LogInformation($"{GetLogPrefix()}: invoked with {nameof(identifier)}: {identifier}");
+            if (!CikDataManager.IsDataAvailable())
+            {
+                await UpdateCikDataset();
+            }
 
-    public override async Task<List<EdgarTickerModel>?> GetAllAsync(string identifier)
-    {
-        Logger?.LogInformation($"{GetLogPrefix()}: invoked with {nameof(identifier)}: {identifier}");
-        if (!CikDataManager.IsDataAvailable())
-        {
-            await UpdateCikDataset();
+            return CikDataManager.GetCik(identifier);
         }
 
-        return CikDataManager.GetTickerInfo(identifier);
-    }
+        public override async Task<List<EdgarTickerJsonDto>> GetAllAsync(int cikNumber)
+        {
+            Logger?.LogInformation($"{GetLogPrefix()}: invoked with {nameof(cikNumber)}: {cikNumber}");
+            if (!CikDataManager.IsDataAvailable())
+            {
+                await UpdateCikDataset();
+            }
 
-    private async Task<List<EdgarTickerModel>?> TryDeserializeFromWeb()
-    {
-        if (_getStreamHandler is null)
-        {
-            LogException(this,
-                new ExceptionEventArgs(new ArgumentNullException($"{nameof(_getStreamHandler)} is null"), LogLevel.Critical , true));
-            return null;
+            return CikDataManager.GetTickerInfo(cikNumber);
         }
-        
-        if (_uri is null)
-        {
-            LogException(this, new ExceptionEventArgs(new ArgumentNullException($"{nameof(_uri)} is null"), LogLevel.Critical, true));
-            return null;
-        }
-        
-        try
-        {
-            var stream = await _getStreamHandler(_uri, Ctx);
-            return await TryDeserialize(stream);
-        }
-        catch (Exception e)
-        {
-            LogException(this, new ExceptionEventArgs(e, LogLevel.Error));
-            return null;
-        }
-    }
 
-    private async Task<List<EdgarTickerModel>?> TryDeserializeFromFile()
-    {
-        try
+        public override async Task<List<EdgarTickerJsonDto>> GetAllAsync(string identifier)
         {
-            await using var fs = new FileStream(_absoluteSourceLocation, FileMode.Open);
-            return await TryDeserialize(fs);
-        }
-        catch (Exception e)
-        {
-            LogException(this, new ExceptionEventArgs(e, LogLevel.Error));
-            return null;
-        }
-    }
+            Logger?.LogInformation($"{GetLogPrefix()}: invoked with {nameof(identifier)}: {identifier}");
+            if (!CikDataManager.IsDataAvailable())
+            {
+                await UpdateCikDataset();
+            }
 
-    private async Task<List<EdgarTickerModel>?> TryDeserialize(Stream stream)
-    {
-        try
-        {
-            var parsedResult =
-                await JsonSerializer.DeserializeAsync<Dictionary<string, EdgarTickerModel>>(stream,
-                    cancellationToken: Ctx);
+            return CikDataManager.GetTickerInfo(identifier);
+        }
 
-            if (parsedResult is null)
+        private async Task<List<EdgarTickerJsonDto>> TryDeserializeFromWeb()
+        {
+            if (_getStreamHandler is null)
             {
                 LogException(this,
-                    new ExceptionEventArgs(new Exception($"{_absoluteSourceLocation} contains no values"), LogLevel.Warning));
+                    new ExceptionEventArgs(new ArgumentNullException($"{nameof(_getStreamHandler)} is null"),
+                        LogLevel.Critical, true));
                 return null;
             }
 
-            return parsedResult.Select(x => x.Value).ToList();
+            if (_uri is null)
+            {
+                LogException(this,
+                    new ExceptionEventArgs(new ArgumentNullException($"{nameof(_uri)} is null"), LogLevel.Critical,
+                        true));
+                return null;
+            }
+
+            try
+            {
+                var stream = await _getStreamHandler(_uri, Ctx);
+#if NET6_0_OR_GREATER
+                return await TryDeserialize(stream);
+#elif NETSTANDARD2_0
+                return TryDeserialize(stream);
+#endif
+            }
+            catch (Exception e)
+            {
+                LogException(this, new ExceptionEventArgs(e, LogLevel.Error));
+                return null;
+            }
         }
-        catch (JsonException e)
+
+#if NET6_0_OR_GREATER
+        private async Task<List<EdgarTickerJsonDto>> TryDeserializeFromFile()
+#elif NETSTANDARD2_0
+        private List<EdgarTickerJsonDto> TryDeserializeFromFile()
+#endif
         {
-            LogException(this, new ExceptionEventArgs(e, LogLevel.Error));
-            return null;
+            try
+            {
+                using (var fs = new FileStream(_absoluteSourceLocation, FileMode.Open))
+                {
+#if NET6_0_OR_GREATER
+                    return await TryDeserialize(fs);
+#elif NETSTANDARD2_0
+                    return TryDeserialize(fs);
+#endif
+                }
+            }
+            catch (Exception e)
+            {
+                LogException(this, new ExceptionEventArgs(e, LogLevel.Error));
+                return null;
+            }
         }
-        catch (Exception e)
+
+#if NET6_0_OR_GREATER
+        private async Task<List<EdgarTickerJsonDto>> TryDeserialize(Stream stream)
+#elif NETSTANDARD2_0
+        private List<EdgarTickerJsonDto> TryDeserialize(Stream stream)
+#endif
         {
-            LogException(this, new ExceptionEventArgs(e, LogLevel.Error, true));
-            return null;
+            try
+            {
+                var parsedResult =
+#if NET6_0_OR_GREATER
+                    await JsonSerializer.DeserializeAsync<Dictionary<string, EdgarTickerJsonDto>>(stream,
+                        cancellationToken: Ctx);
+#elif NETSTANDARD2_0
+                    JsonConvert.DeserializeObject<Dictionary<string, EdgarTickerJsonDto>>(stream.GetString());
+#endif
+
+                if (parsedResult is null)
+                {
+                    LogException(this,
+                        new ExceptionEventArgs(new Exception($"{_absoluteSourceLocation} contains no values"),
+                            LogLevel.Warning));
+                    return null;
+                }
+
+                return parsedResult.Select(x => x.Value)
+                    .ToList();
+            }
+            catch (JsonException e)
+            {
+                LogException(this, new ExceptionEventArgs(e, LogLevel.Error));
+                return null;
+            }
+            catch (Exception e)
+            {
+                LogException(this, new ExceptionEventArgs(e, LogLevel.Error, true));
+                return null;
+            }
+        }
+
+        private static string GetLogPrefix([CallerMemberName] string caller = "")
+        {
+            return $"{nameof(CikJsonProvider)}::{caller}";
         }
     }
-
-    private static string GetLogPrefix([CallerMemberName] string caller = "") => $"{nameof(CikJsonProvider)}::{caller}";
 }

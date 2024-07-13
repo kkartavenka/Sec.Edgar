@@ -1,74 +1,82 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Sec.Edgar.Enums;
 
-namespace Sec.Edgar.Models;
-
-internal static class EnumExtension
+namespace Sec.Edgar.Models
 {
-    private static readonly Dictionary<Type, List<KeyValuePair<string, string>>> AttributeToItem = new();
-    private static readonly Dictionary<Type, List<KeyValuePair<string, string>>> ItemToAttribute = new();
-    internal static List<KeyValuePair<string, string>> GetMapping<T>() where T : Enum
+    internal static class EnumExtension
     {
-        if (AttributeToItem.ContainsKey(typeof(T)))
+        private static readonly Dictionary<Type, List<KeyValuePair<string, string>>> AttributeToItem =
+            new Dictionary<Type, List<KeyValuePair<string, string>>>();
+
+        private static readonly Dictionary<Type, List<KeyValuePair<string, string>>> ItemToAttribute =
+            new Dictionary<Type, List<KeyValuePair<string, string>>>();
+
+        internal static List<KeyValuePair<string, string>> GetMapping<T>() where T : Enum
         {
-            return AttributeToItem[typeof(T)];
-        }
-        
-        var returnVar = typeof(T)
-            .GetFields(BindingFlags.Public | BindingFlags.Static)
-            .SelectMany(x =>
+            if (AttributeToItem.ContainsKey(typeof(T)))
             {
-                var feAttribute = x.GetCustomAttribute<SpecialEnumAttribute>();
+                return AttributeToItem[typeof(T)];
+            }
 
-                if (feAttribute is null)
+            var returnVar = typeof(T)
+                .GetFields(BindingFlags.Public | BindingFlags.Static)
+                .SelectMany(x =>
                 {
-                    return Array.Empty<(string, string)>();
-                }
+                    var feAttribute = x.GetCustomAttribute<SpecialEnumAttribute>();
 
-                var aliasCount = feAttribute.Aliases?.Length ?? 0;
-                var returnElements = new (string, string)[aliasCount + 1];
-                returnElements[0] = (x.Name, feAttribute.Value.ToLower());
-
-                if (feAttribute.Aliases is not null)
-                {
-                    var writeArrayPosition = 1;
-                    foreach (var alias in feAttribute.Aliases)
+                    if (feAttribute is null)
                     {
-                        returnElements[writeArrayPosition] = (x.Name, alias.ToLower());
-                        writeArrayPosition++;
+                        return Array.Empty<(string, string)>();
                     }
-                }
 
-                return returnElements;
-            })
-            .Select(x => new KeyValuePair<string, string>(x.Item2, x.Item1))
-            .ToList();
+                    var aliasCount = feAttribute.Aliases?.Length ?? 0;
+                    var returnElements = new (string, string)[aliasCount + 1];
+                    returnElements[0] = (x.Name, feAttribute.Value.ToLower());
 
-        AttributeToItem.Add(typeof(T), returnVar);
-        
-        return returnVar;
-    }
-    
-    internal static List<KeyValuePair<string, string>> GetAttributeMapping<T>() where T : Enum
-    {
-        if (ItemToAttribute.ContainsKey(typeof(T)))
-        {
-            return ItemToAttribute[typeof(T)];
+                    if (feAttribute.Aliases != null)
+                    {
+                        var writeArrayPosition = 1;
+                        foreach (var alias in feAttribute.Aliases)
+                        {
+                            returnElements[writeArrayPosition] = (x.Name, alias.ToLower());
+                            writeArrayPosition++;
+                        }
+                    }
+
+                    return returnElements;
+                })
+                .Select(x => new KeyValuePair<string, string>(x.Item2, x.Item1))
+                .ToList();
+
+            AttributeToItem.Add(typeof(T), returnVar);
+
+            return returnVar;
         }
 
-        var returnVar = typeof(T)
-            .GetFields(BindingFlags.Public | BindingFlags.Static)
-            .Select(x =>
+        internal static List<KeyValuePair<string, string>> GetAttributeMapping<T>() where T : Enum
+        {
+            if (ItemToAttribute.ContainsKey(typeof(T)))
             {
-                var attribute = x.GetCustomAttribute<SpecialEnumAttribute>();
-                return (x.Name, attribute?.Value.ToLower());
-            })
-            .Where(x => !string.IsNullOrEmpty(x.Item2))
-            .Select(x => new KeyValuePair<string, string>(x.Name, x.Item2))
-            .ToList();
-        
-        ItemToAttribute.Add(typeof(T), returnVar);
+                return ItemToAttribute[typeof(T)];
+            }
 
-        return returnVar;
+            var returnVar = typeof(T)
+                .GetFields(BindingFlags.Public | BindingFlags.Static)
+                .Select(x =>
+                {
+                    var attribute = x.GetCustomAttribute<SpecialEnumAttribute>();
+                    return (x.Name, attribute?.Value.ToLower());
+                })
+                .Where(x => !string.IsNullOrEmpty(x.Item2))
+                .Select(x => new KeyValuePair<string, string>(x.Name, x.Item2))
+                .ToList();
+
+            ItemToAttribute.Add(typeof(T), returnVar);
+
+            return returnVar;
+        }
     }
 }

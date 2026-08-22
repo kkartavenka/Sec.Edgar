@@ -51,7 +51,7 @@ namespace Sec.Edgar
         internal string GetCik(string identifier)
         {
             var tickerInfo = GetTickerInfo(identifier);
-            return tickerInfo is null
+            return tickerInfo is null || tickerInfo.Count == 0
                 ? string.Empty
                 : FillStringWithZeroes(tickerInfo.First()
                     .CikStr);
@@ -60,7 +60,7 @@ namespace Sec.Edgar
         internal string GetCik(int identifier)
         {
             var tickerInfo = GetTickerInfo(identifier);
-            return tickerInfo is null
+            return tickerInfo is null || tickerInfo.Count == 0
                 ? string.Empty
                 : FillStringWithZeroes(tickerInfo.First()
                     .CikStr);
@@ -76,7 +76,7 @@ namespace Sec.Edgar
 
             var selectedItems = _tickersInfo?.Where(x => x.Cik == identifier)
                 .ToList();
-            if (selectedItems is null)
+            if (selectedItems is null || selectedItems.Count == 0)
             {
                 ExceptionHandler?.Invoke(this,
                     new ExceptionEventArgs(new Exception($"Cannot find CIK through provided identifier: {identifier}"),
@@ -99,7 +99,7 @@ namespace Sec.Edgar
                 .Where(x => string.Equals(x.Ticker, identifier.Trim(), StringComparison.InvariantCultureIgnoreCase))
                 .ToList();
 
-            if (findByTicker != null)
+            if (findByTicker != null && findByTicker.Count > 0)
             {
                 return findByTicker;
             }

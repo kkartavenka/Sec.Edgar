@@ -14,8 +14,8 @@ namespace Sec.Edgar
     internal sealed class HttpClientWrapper
     {
         private static readonly object Lock = new object();
-        private static HttpClient _httpClient = new HttpClient();
-        private static HttpClientWrapper _instance;
+        private static HttpClient _httpClient;
+        private static volatile HttpClientWrapper _instance;
         private static TimeLimiter _timeLimiter;
 
         private HttpClientWrapper(ClientInfo clientInfo, ILogger logger)
@@ -50,7 +50,10 @@ namespace Sec.Edgar
 
             lock (Lock)
             {
-                _instance = new HttpClientWrapper(clientInfo, clientInfo.GetLogger<HttpClientWrapper>());
+                if (_instance is null)
+                {
+                    _instance = new HttpClientWrapper(clientInfo, clientInfo.GetLogger<HttpClientWrapper>());
+                }
             }
 
             return _instance;

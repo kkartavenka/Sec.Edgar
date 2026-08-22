@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -8,11 +9,11 @@ namespace Sec.Edgar.Models
 {
     internal static class EnumExtension
     {
-        private static readonly Dictionary<Type, List<KeyValuePair<string, string>>> AttributeToItem =
-            new Dictionary<Type, List<KeyValuePair<string, string>>>();
+        private static readonly ConcurrentDictionary<Type, List<KeyValuePair<string, string>>> AttributeToItem =
+            new ConcurrentDictionary<Type, List<KeyValuePair<string, string>>>();
 
-        private static readonly Dictionary<Type, List<KeyValuePair<string, string>>> ItemToAttribute =
-            new Dictionary<Type, List<KeyValuePair<string, string>>>();
+        private static readonly ConcurrentDictionary<Type, List<KeyValuePair<string, string>>> ItemToAttribute =
+            new ConcurrentDictionary<Type, List<KeyValuePair<string, string>>>();
 
         internal static List<KeyValuePair<string, string>> GetMapping<T>() where T : Enum
         {
@@ -51,7 +52,7 @@ namespace Sec.Edgar.Models
                 .Select(x => new KeyValuePair<string, string>(x.Item2, x.Item1))
                 .ToList();
 
-            AttributeToItem.Add(typeof(T), returnVar);
+            AttributeToItem[typeof(T)] = returnVar;
 
             return returnVar;
         }
@@ -74,7 +75,7 @@ namespace Sec.Edgar.Models
                 .Select(x => new KeyValuePair<string, string>(x.Name, x.Item2))
                 .ToList();
 
-            ItemToAttribute.Add(typeof(T), returnVar);
+            ItemToAttribute[typeof(T)] = returnVar;
 
             return returnVar;
         }

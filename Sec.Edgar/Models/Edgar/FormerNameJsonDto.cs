@@ -12,8 +12,8 @@ namespace Sec.Edgar.Models.Edgar
     {
 #if NET6_0_OR_GREATER
         [JsonPropertyName("name")]
-#elif NETSTANDARD2_Ω
-    [JsonProperty("name")]
+#elif NETSTANDARD2_0
+        [JsonProperty("name")]
 #endif
         public string Name { get; set; }
 

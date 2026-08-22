@@ -9,13 +9,24 @@ public class CompanyConceptExample(EdgarClient client)
         Console.WriteLine($"{Environment.NewLine}{nameof(CompanyConceptExample)}");
         
         var concept = await client.GetCompanyConcept("brk-b", Taxonomy.USGaap, "EarningsPerShareBasic");
-        Console.WriteLine($"Entity: {concept?.EntityName}, CIK: {concept?.CentralIndexKey}");
-        Console.WriteLine($"Description: {concept?.Description}");
-        Console.WriteLine($"Tag of interest: {concept?.Tag}, Taxonomy: {concept?.Taxonomy}");
-        Console.WriteLine($"Units: {concept?.Units.First().Key}");
-        foreach (var record in concept.Units.FirstOrDefault().Value)
+        if (concept is null || concept.Units.Count == 0)
         {
-            Console.WriteLine($"{record.StartDate.Value.ToShortDateString()}-{record.EndDate.Value.ToShortDateString()}. Value: {record.Value}. Form {record.Form.ToString()}");
+            Console.WriteLine("No concept data returned");
+            return;
+        }
+
+        Console.WriteLine($"Entity: {concept.EntityName}, CIK: {concept.CentralIndexKey}");
+        Console.WriteLine($"Description: {concept.Description}");
+        Console.WriteLine($"Tag of interest: {concept.Tag}, Taxonomy: {concept.Taxonomy}");
+
+        var unit = concept.Units.First();
+        Console.WriteLine($"Units: {unit.Key}");
+        foreach (var record in unit.Value)
+        {
+            // Instantaneous concepts carry no "start", so neither date is guaranteed.
+            var start = record.StartDate?.ToShortDateString() ?? "n/a";
+            var end = record.EndDate?.ToShortDateString() ?? "n/a";
+            Console.WriteLine($"{start}-{end}. Value: {record.Value}. Form {record.Form.ToString()}");
         }
     }
 }

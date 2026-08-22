@@ -59,9 +59,14 @@ namespace Sec.Edgar.Providers
             }
 
             var returnVar = new Submission(rootObject, CikProvider);
+            if (rootObject.Files is null)
+            {
+                return returnVar;
+            }
+
             returnVar.AddFiles(rootObject.Files.RecentFiles);
 
-            foreach (var file in rootObject.Files.Files)
+            foreach (var file in rootObject.Files.Files ?? Array.Empty<FileModelJsonDto>())
             {
                 var responseStream = await HttpClientWrapper.GetStreamAsync(GetUri(file.Name), Ctx);
                 var fileObject =

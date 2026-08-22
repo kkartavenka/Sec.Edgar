@@ -22,11 +22,15 @@
 
     <ItemGroup Condition="'$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net7.0' OR '$(TargetFramework)' == 'net8.0'">
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1"/>
-        <PackageReference Include="System.Text.Json" Version="8.0.4"/>
+        <PackageReference Include="System.Text.Json" Version="8.0.5"/>
     </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="RateLimiter" Version="2.2.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Sec.Edgar.Tests"/>
     </ItemGroup>
 
 </Project>

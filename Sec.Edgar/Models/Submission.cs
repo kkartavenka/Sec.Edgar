@@ -29,16 +29,7 @@ namespace Sec.Edgar.Models
             StateOfIncorporationDescription = rawModel.StateOfIncorporationDescription;
             FormerNames = ConvertToPublic(rawModel.FormerNames);
             InitTickersArray(rawModel.Tickers, rawModel.Exchanges);
-
-            if (DateTime.TryParseExact(rawModel.FiscalYearEnd, "MMdd", CultureInfo.InvariantCulture, DateTimeStyles.None,
-                    out var dt))
-            {
-                FiscalYearEnd = new DateTime(DateTime.UtcNow.Year, dt.Month, dt.Day);
-            }
-            else
-            {
-                throw new FormatException($"Failed to convert {rawModel.FiscalYearEnd} to {nameof(DateTime)}");
-            }
+            FiscalYearEnd = ParseFiscalYearEnd(rawModel.FiscalYearEnd);
         }
 
         public int CentralIndexKey { get; }
@@ -52,7 +43,7 @@ namespace Sec.Edgar.Models
         public string EmployerIdentificationNumber { get; }
         public string Description { get; }
         public string Category { get; }
-        public DateTime FiscalYearEnd { get; }
+        public DateTime? FiscalYearEnd { get; }
         public string StateOfIncorporation { get; }
         public string StateOfIncorporationDescription { get; }
         public FormerName[] FormerNames { get; }
@@ -92,17 +83,55 @@ namespace Sec.Edgar.Models
             Array.Copy(newDataArray, 0, _filings, originalFilingSize, incomingDataLength);
         }
 
+        /// <summary>
+        ///     SEC reports the fiscal year end as an "MMdd" string, but omits it (or leaves it blank)
+        ///     for filers that do not have one, such as individuals filing Form 4. A value of "0229"
+        ///     is also unrepresentable in a non-leap year. Neither case is an error, so report the
+        ///     absence as null instead of throwing.
+        /// </summary>
+        private static DateTime? ParseFiscalYearEnd(string fiscalYearEnd)
+        {
+            if (!DateTime.TryParseExact(fiscalYearEnd, "MMdd", CultureInfo.InvariantCulture, DateTimeStyles.None,
+                    out var dt))
+            {
+                return null;
+            }
+
+            var year = DateTime.UtcNow.Year;
+            if (dt.Month == 2 && dt.Day == 29 && !DateTime.IsLeapYear(year))
+            {
+                return new DateTime(year, 2, 28);
+            }
+
+            return new DateTime(year, dt.Month, dt.Day);
+        }
+
         private void InitTickersArray(IReadOnlyList<string> tickers, IReadOnlyList<ExchangeType> exchanges)
         {
+            if (tickers is null)
+            {
+                Tickers = Array.Empty<Ticker>();
+                return;
+            }
+
             Tickers = new Ticker[tickers.Count];
             for (var i = 0; i < tickers.Count; i++)
             {
-                Tickers[i] = new Ticker(tickers[i], exchanges[i]);
+                // SEC does not guarantee that "exchanges" is as long as "tickers".
+                var exchange = exchanges != null && i < exchanges.Count
+                    ? exchanges[i]
+                    : ExchangeType.Unknown;
+                Tickers[i] = new Ticker(tickers[i], exchange);
             }
         }
 
         private static FormerName[] ConvertToPublic(IReadOnlyList<FormerNameJsonDto> edgarFormerNames)
         {
+            if (edgarFormerNames is null)
+            {
+                return Array.Empty<FormerName>();
+            }
+
             var returnDto = new FormerName[edgarFormerNames.Count];
             for (var i = 0; i < edgarFormerNames.Count; i++)
             {

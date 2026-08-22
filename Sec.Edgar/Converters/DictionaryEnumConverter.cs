@@ -51,7 +51,12 @@ namespace Sec.Edgar.Converters
                 reader.Read();
                 var value = _jsonConverter.Read(ref reader, null, options)!;
 
-                returnVar.Add(parsedKey, value);
+                // Every taxonomy the enum does not know about collapses onto Unrecognized,
+                // so more than one of them in the same payload must not collide.
+                if (!returnVar.ContainsKey(parsedKey))
+                {
+                    returnVar.Add(parsedKey, value);
+                }
             }
 
             return returnVar;
@@ -96,7 +101,12 @@ namespace Sec.Edgar.Converters
                 reader.Read();
                 var value = _jsonConverter.ReadJson(reader, null, null, false, serializer);
 
-                returnVar.Add(parsedKey, value);
+                // Every taxonomy the enum does not know about collapses onto Unrecognized,
+                // so more than one of them in the same payload must not collide.
+                if (!returnVar.ContainsKey(parsedKey))
+                {
+                    returnVar.Add(parsedKey, value);
+                }
             }
 
             return returnVar;

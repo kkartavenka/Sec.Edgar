@@ -16,8 +16,11 @@ public class SubmissionsExample(EdgarClient client)
                 .Where(x => x.Form == FormType.Form10K)
                 .MaxBy(x => x.FilingDate);
 
-            var link = await lastYearReport?.GetLink();
-            Console.WriteLine($"Last year 10-K report link: {link}");
+            if (lastYearReport is not null)
+            {
+                var link = await lastYearReport.GetLink();
+                Console.WriteLine($"Last year 10-K report link: {link}");
+            }
         }
     }
 }

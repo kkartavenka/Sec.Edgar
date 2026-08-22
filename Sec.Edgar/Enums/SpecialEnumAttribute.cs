@@ -18,10 +18,6 @@ namespace Sec.Edgar.Enums
 
         internal string Value { get; }
 
-#if NET8
-        internal string[]? Aliases { get; }
-#else
         internal string[] Aliases { get; }
-#endif
     }
 }

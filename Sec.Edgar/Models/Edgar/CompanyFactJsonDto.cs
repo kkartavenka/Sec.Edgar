@@ -14,6 +14,7 @@ namespace Sec.Edgar.Models.Edgar
 #if NET6_0_OR_GREATER
         [JsonPropertyName("cik")]
 #elif NETSTANDARD2_0
+        [JsonProperty("cik")]
 #endif
         public int CentralIndexKey { get; set; }
 
